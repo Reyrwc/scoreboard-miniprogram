@@ -25,8 +25,11 @@ Page({
     try {
       const res = await api.getUserInfo()
       if (res.user) {
-        app.globalData.userInfo = res.user
-        this.setData({ userInfo: res.user, isLoggedIn: true })
+        const user = res.user
+        user.winRate = user.totalGames > 0 ? (user.totalWins / user.totalGames * 100).toFixed(1) : '0.0'
+        user.netScore = (user.totalWinScore || 0) - (user.totalLoseScore || 0)
+        app.globalData.userInfo = user
+        this.setData({ userInfo: user, isLoggedIn: true })
       }
     } catch (err) {
       console.error('获取用户信息失败:', err)

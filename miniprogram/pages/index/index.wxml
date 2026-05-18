@@ -18,12 +18,12 @@
       <view class="stat-label">总场次</view>
     </view>
     <view class="stat-item">
-      <view class="stat-value">{{userInfo.totalGames > 0 ? ((userInfo.totalWins / userInfo.totalGames * 100).toFixed(1)) : '0.0'}}%</view>
+      <view class="stat-value">{{userInfo.winRate}}%</view>
       <view class="stat-label">胜率</view>
     </view>
     <view class="stat-item">
-      <view class="stat-value {{(userInfo.totalWinScore - userInfo.totalLoseScore) >= 0 ? 'positive' : 'negative'}}">
-        {{(userInfo.totalWinScore - userInfo.totalLoseScore) >= 0 ? '+' : ''}}{{userInfo.totalWinScore - userInfo.totalLoseScore}}
+      <view class="stat-value {{userInfo.netScore >= 0 ? 'positive' : 'negative'}}">
+        {{userInfo.netScore >= 0 ? '+' : ''}}{{userInfo.netScore}}
       </view>
       <view class="stat-label">净得分</view>
     </view>
