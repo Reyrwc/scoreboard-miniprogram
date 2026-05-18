@@ -1,0 +1,7 @@
+<view class="player-card" bindtap="onTap">
+  <view class="card-avatar">{{player.nickname[0] || '?'}}</view>
+  <view class="card-name">{{player.nickname || '玩家'}}</view>
+  <view class="card-score {{player.score > 0 ? 'score-pos' : player.score < 0 ? 'score-neg' : 'score-zero'}}">
+    {{player.score > 0 ? '+' : ''}}{{player.score}}
+  </view>
+</view>

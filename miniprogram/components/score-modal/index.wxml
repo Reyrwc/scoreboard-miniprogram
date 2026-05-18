@@ -1,0 +1,17 @@
+<view class="modal-overlay {{visible ? 'active' : ''}}" bindtap="onClose">
+  <view class="modal-sheet" catchtap>
+    <view class="modal-header">
+      <view></view>
+      <view class="modal-title">给 {{targetPlayer.nickname}} 记分</view>
+      <view class="modal-close" bindtap="onClose">取消</view>
+    </view>
+    <view class="input-row">
+      <input class="score-input" type="digit" placeholder="分数" value="{{scoreValue}}" bindinput="onScoreInput" />
+    </view>
+    <view class="quick-btns">
+      <view class="quick-btn" wx:for="{{quickScores}}" wx:key="*this" bindtap="onQuickScore" data-value="{{item}}">+{{item}}</view>
+    </view>
+    <input class="note-input" placeholder="备注（选填）" value="{{noteValue}}" bindinput="onNoteInput" />
+    <button class="btn-submit" bindtap="onConfirm">确认</button>
+  </view>
+</view>

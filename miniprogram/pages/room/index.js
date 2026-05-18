@@ -9,7 +9,9 @@ Page({
     scores: [],
     isOwner: false,
     isLoading: true,
-    isActive: false
+    isActive: false,
+    showScoreModal: false,
+    targetPlayer: null
   },
 
   onLoad(options) {
@@ -72,7 +74,31 @@ Page({
   },
 
   onPlayerTap(e) {
-    // Will be implemented in Task 5 (scoring)
+    const player = e.detail.player
+    if (player.openid === app.globalData.openid) {
+      wx.showToast({ title: '不能给自己记分', icon: 'none' })
+      return
+    }
+    this.setData({ showScoreModal: true, targetPlayer: player })
+  },
+
+  onScoreClose() {
+    this.setData({ showScoreModal: false, targetPlayer: null })
+  },
+
+  async onScoreConfirm(e) {
+    const { score, note } = e.detail
+    const { targetPlayer, roomId } = this.data
+    try {
+      wx.showLoading({ title: '提交中...' })
+      await api.addScore({ roomId, toOpenid: targetPlayer.openid, amount: score, note })
+      this.setData({ showScoreModal: false, targetPlayer: null })
+      this.loadRoom()
+    } catch (err) {
+      wx.showToast({ title: err.message || '记分失败', icon: 'none' })
+    } finally {
+      wx.hideLoading()
+    }
   },
 
   onInvite() {

@@ -1,4 +1,7 @@
 {
   "navigationBarTitleText": "房间",
-  "usingComponents": {}
+  "usingComponents": {
+    "player-card": "/components/player-card/index",
+    "score-modal": "/components/score-modal/index"
+  }
 }
