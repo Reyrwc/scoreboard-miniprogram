@@ -11,13 +11,16 @@ exports.main = async (event, context) => {
 
     // 检查自动解散 (30分钟无记分)
     if (room.status === 'active') {
-      const lastScore = new Date(room.lastScoreAt).getTime()
+      const lastScore = room.lastScoreAt instanceof Date
+        ? room.lastScoreAt.getTime()
+        : new Date(room.lastScoreAt).getTime()
       const now = Date.now()
       if (now - lastScore > 30 * 60 * 1000) {
         await db.collection('rooms').doc(roomId).update({
           data: { status: 'dissolved', dissolvedAt: db.serverDate() }
         })
         room.status = 'dissolved'
+        return { code: 0, room, scores: [], rankings: [] }
       }
     }
 

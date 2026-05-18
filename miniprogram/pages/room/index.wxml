@@ -21,7 +21,7 @@
           {{item.score >= 0 ? '+' : ''}}{{item.score}}
         </view>
       </view>
-      <view class="player-card add-card" bindtap="onInvite">
+      <view class="player-card add-card" wx:if="{{isActive}}" bindtap="onInvite">
         <view class="card-avatar">+</view>
         <view class="card-name">邀请</view>
       </view>
@@ -40,7 +40,7 @@
     <view class="empty-tip" wx:else>暂无记分记录</view>
   </view>
 
-  <view class="bottom-bar">
+  <view class="bottom-bar" wx:if="{{isActive}}">
     <button class="btn-next" bindtap="onNextRound">下一局</button>
   </view>
 </view>

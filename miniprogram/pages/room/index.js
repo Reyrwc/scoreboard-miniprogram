@@ -8,7 +8,8 @@ Page({
     rankings: [],
     scores: [],
     isOwner: false,
-    isLoading: true
+    isLoading: true,
+    isActive: false
   },
 
   onLoad(options) {
@@ -47,7 +48,8 @@ Page({
         rankings: res.rankings,
         scores: res.scores,
         isOwner: res.room.ownerId === app.globalData.openid,
-        isLoading: false
+        isLoading: false,
+        isActive: res.room.status === 'active'
       })
       wx.setNavigationBarTitle({ title: res.room.name })
     } catch (err) {
