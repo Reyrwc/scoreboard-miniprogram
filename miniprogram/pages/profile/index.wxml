@@ -14,8 +14,8 @@
   </view>
   <view class="quick-stats" wx:if="{{userInfo}}">
     <view class="quick-stat"><view class="quick-stat-value">{{userInfo.totalGames || 0}}</view><view class="quick-stat-label">总场次</view></view>
-    <view class="quick-stat"><view class="quick-stat-value">{{userInfo.totalGames > 0 ? ((userInfo.totalWins / userInfo.totalGames * 100).toFixed(1)) : '0.0'}}%</view><view class="quick-stat-label">胜率</view></view>
-    <view class="quick-stat"><view class="quick-stat-value {{(userInfo.totalWinScore - userInfo.totalLoseScore) >= 0 ? 'positive' : 'negative'}}">{{(userInfo.totalWinScore - userInfo.totalLoseScore) >= 0 ? '+' : ''}}{{(userInfo.totalWinScore - userInfo.totalLoseScore) || 0}}</view><view class="quick-stat-label">净得分</view></view>
+    <view class="quick-stat"><view class="quick-stat-value">{{userInfo.winRate}}%</view><view class="quick-stat-label">胜率</view></view>
+    <view class="quick-stat"><view class="quick-stat-value {{userInfo.netScore >= 0 ? 'positive' : 'negative'}}">{{userInfo.netScore >= 0 ? '+' : ''}}{{userInfo.netScore}}</view><view class="quick-stat-label">净得分</view></view>
   </view>
   <view class="menu-section">
     <view class="menu-title">我的数据</view>

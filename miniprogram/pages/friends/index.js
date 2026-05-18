@@ -28,7 +28,14 @@ Page({
       if (!res || !Array.isArray(res.list)) {
         throw new Error(res?.message || '数据格式错误')
       }
-      const allUsers = res.list
+      const sortBy = this.data.sortBy
+      const allUsers = res.list.map(u => ({
+        ...u,
+        winRateStr: u.winRate.toFixed(1),
+        scoreStr: sortBy === 'winRate' ? u.winRate.toFixed(1) + '%'
+          : sortBy === 'totalGames' ? u.totalGames + '场'
+          : (u.netScore >= 0 ? '+' : '') + u.netScore
+      }))
       const topThreeRaw = allUsers.slice(0, 3)
       // Reorder for podium display: 2-1-3
       let displayTop = []

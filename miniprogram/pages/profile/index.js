@@ -3,7 +3,12 @@ const app = getApp()
 Page({
   data: { userInfo: null },
   onShow() {
-    this.setData({ userInfo: app.globalData.userInfo })
+    const user = app.globalData.userInfo
+    if (user) {
+      user.winRate = user.totalGames > 0 ? (user.totalWins / user.totalGames * 100).toFixed(1) : '0.0'
+      user.netScore = (user.totalWinScore || 0) - (user.totalLoseScore || 0)
+    }
+    this.setData({ userInfo: user })
   },
   goHistory() { wx.navigateTo({ url: '/pages/history/index' }) },
   goStats() { wx.navigateTo({ url: '/pages/stats/index' }) },

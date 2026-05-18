@@ -10,7 +10,7 @@
       <view class="top-rank {{item.displayRank === 1 ? 'gold' : item.displayRank === 2 ? 'silver' : 'bronze'}}">{{item.displayRank}}</view>
       <view class="top-avatar">{{item.nickname ? item.nickname[0] : '?'}}</view>
       <view class="top-name">{{item.nickname || '未知'}}</view>
-      <view class="top-score">{{sortBy === 'winRate' ? item.winRate.toFixed(1) + '%' : sortBy === 'totalGames' ? item.totalGames + '场' : (item.netScore >= 0 ? '+' : '') + item.netScore}}</view>
+      <view class="top-score">{{item.scoreStr}}</view>
     </view>
   </view>
 
@@ -23,7 +23,7 @@
         <view class="rank-name">{{item.nickname || '未知'}}</view>
         <view class="rank-meta">{{item.totalGames}}场 · {{item.totalWins}}胜 · {{item.netScore >= 0 ? '+' : ''}}{{item.netScore}}</view>
       </view>
-      <view class="rank-winrate">{{item.winRate.toFixed(1)}}%</view>
+      <view class="rank-winrate">{{item.winRateStr}}%</view>
     </view>
   </view>
 
