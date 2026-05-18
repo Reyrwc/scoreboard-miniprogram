@@ -26,7 +26,7 @@
   font-weight: var(--font-weight-semibold);
   margin-bottom: 12rpx;
 }
-.top-item:first-child .top-avatar { width: 128rpx; height: 128rpx; background: linear-gradient(135deg, #ffd700, #ffed4e); }
+.top-item:nth-child(2) .top-avatar { width: 128rpx; height: 128rpx; background: linear-gradient(135deg, #ffd700, #ffed4e); }
 .top-name { font-size: var(--font-size-sm); font-weight: var(--font-weight-medium); margin-bottom: 4rpx; }
 .top-score { font-size: var(--font-size-xs); color: var(--color-text-secondary); }
 .top-rank { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); margin-bottom: 8rpx; }

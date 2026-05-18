@@ -118,7 +118,7 @@ const getStats = (data) => {
 
 /**
  * 获取好友排行榜
- * @param {object} data { period }
+ * @param {object} data { sortBy }
  */
 const getFriendsRank = (data) => {
   return callFunction('getFriendsRank', data)

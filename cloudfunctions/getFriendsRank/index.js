@@ -4,15 +4,26 @@ const db = cloud.database()
 
 exports.main = async (event, context) => {
   const { sortBy = 'winRate' } = event
+  const allowedSorts = ['winRate', 'totalGames', 'netScore']
+  const sortKey = allowedSorts.includes(sortBy) ? sortBy : 'winRate'
 
   try {
     const usersRes = await db.collection('users')
       .where({ totalGames: db.command.gt(0) })
+      .field({
+        _id: true,
+        nickname: true,
+        totalGames: true,
+        totalWins: true,
+        totalWinScore: true,
+        totalLoseScore: true
+      })
+      .limit(100)
       .get()
 
     const users = usersRes.data.map(u => ({
       ...u,
-      winRate: u.totalGames > 0 ? parseFloat((u.totalWins / u.totalGames * 100).toFixed(1)) : 0,
+      winRate: parseFloat((u.totalWins / u.totalGames * 100).toFixed(1)),
       netScore: (u.totalWinScore || 0) - (u.totalLoseScore || 0)
     }))
 
@@ -21,7 +32,7 @@ exports.main = async (event, context) => {
       totalGames: (a, b) => b.totalGames - a.totalGames,
       netScore: (a, b) => b.netScore - a.netScore
     }
-    users.sort(sortFns[sortBy] || sortFns.winRate)
+    users.sort(sortFns[sortKey])
 
     return { code: 0, list: users, total: users.length }
   } catch (err) {

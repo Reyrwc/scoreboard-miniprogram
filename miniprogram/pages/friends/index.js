@@ -25,12 +25,29 @@ Page({
   async loadRank() {
     try {
       const res = await api.getFriendsRank({ sortBy: this.data.sortBy })
+      if (!res || !Array.isArray(res.list)) {
+        throw new Error(res?.message || '数据格式错误')
+      }
       const allUsers = res.list
-      const topThree = allUsers.slice(0, 3)
-      // Reorder for display: 2-1-3 (silver, gold, bronze)
-      const displayTop = topThree.length >= 3
-        ? [topThree[1], topThree[0], topThree[2]]
-        : topThree
+      const topThreeRaw = allUsers.slice(0, 3)
+      // Reorder for podium display: 2-1-3
+      let displayTop = []
+      if (topThreeRaw.length >= 3) {
+        displayTop = [
+          { ...topThreeRaw[1], displayRank: 2 },
+          { ...topThreeRaw[0], displayRank: 1 },
+          { ...topThreeRaw[2], displayRank: 3 }
+        ]
+      } else if (topThreeRaw.length === 2) {
+        displayTop = [
+          { ...topThreeRaw[1], displayRank: 2 },
+          { ...topThreeRaw[0], displayRank: 1 }
+        ]
+      } else if (topThreeRaw.length === 1) {
+        displayTop = [
+          { ...topThreeRaw[0], displayRank: 1 }
+        ]
+      }
 
       this.setData({
         topThree: displayTop,

@@ -7,7 +7,7 @@
 
   <view class="top-three" wx:if="{{topThree.length > 0 && !loading}}">
     <view class="top-item" wx:for="{{topThree}}" wx:key="_id">
-      <view class="top-rank {{index === 1 ? 'gold' : index === 0 ? 'silver' : 'bronze'}}">{{index === 1 ? '1' : index === 0 ? '2' : '3'}}</view>
+      <view class="top-rank {{item.displayRank === 1 ? 'gold' : item.displayRank === 2 ? 'silver' : 'bronze'}}">{{item.displayRank}}</view>
       <view class="top-avatar">{{item.nickname ? item.nickname[0] : '?'}}</view>
       <view class="top-name">{{item.nickname || '未知'}}</view>
       <view class="top-score">{{sortBy === 'winRate' ? item.winRate.toFixed(1) + '%' : sortBy === 'totalGames' ? item.totalGames + '场' : (item.netScore >= 0 ? '+' : '') + item.netScore}}</view>
