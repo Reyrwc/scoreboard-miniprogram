@@ -16,14 +16,28 @@ Page({
     if (options.create === 'true') {
       this.createRoom()
     } else if (options.roomId) {
-      this.setData({ roomId: options.roomId })
-      this.loadRoom()
+      this.joinRoom(options.roomId)
     }
   },
 
   onUnload() {
     if (this.roomWatcher) this.roomWatcher.close()
     if (this.scoreWatcher) this.scoreWatcher.close()
+  },
+
+  async joinRoom(roomId) {
+    try {
+      wx.showLoading({ title: '加入中...' })
+      await api.joinRoom({ roomId })
+      // api.callFunction throws on non-zero codes, so success here means join succeeded
+      this.setData({ roomId })
+      this.loadRoom()
+    } catch (err) {
+      wx.showToast({ title: err.message || '加入失败', icon: 'none' })
+      setTimeout(() => wx.navigateBack(), 1500)
+    } finally {
+      wx.hideLoading()
+    }
   },
 
   async createRoom() {
