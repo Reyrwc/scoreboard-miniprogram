@@ -1,7 +1,7 @@
 <view wx:if="{{history}}" class="detail-page">
   <view class="room-info">
     <view class="room-name">{{history.roomName}}</view>
-    <view class="room-date">{{history.playerCount}}人 · {{history.roundCount}}局</view>
+    <view class="room-date">{{history.dateLabel}} · {{history.playerCount}}人 · {{history.roundCount}}局</view>
   </view>
   <view class="section-header">
     <text class="section-title">最终排名</text>
@@ -9,7 +9,7 @@
   <view class="rank-list">
     <view class="rank-item" wx:for="{{history.players}}" wx:key="openid">
       <view class="rank-position {{index < 3 ? 'top-' + (index + 1) : ''}}">{{item.rank}}</view>
-      <view class="rank-avatar">{{item.nickname[0]}}</view>
+      <view class="rank-avatar">{{item.nickname ? item.nickname[0] : '?'}}</view>
       <view class="rank-info">
         <view class="rank-name">{{item.nickname}}</view>
       </view>

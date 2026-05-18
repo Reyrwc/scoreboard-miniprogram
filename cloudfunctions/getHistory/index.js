@@ -5,6 +5,7 @@ const db = cloud.database()
 exports.main = async (event, context) => {
   const { OPENID } = cloud.getWXContext()
   const { page = 1, pageSize = 20, roomId } = event
+  const limit = Math.min(pageSize, 50)
 
   try {
     // Single record lookup by roomId
@@ -28,8 +29,8 @@ exports.main = async (event, context) => {
     const historyRes = await db.collection('history').where({
       'players.openid': OPENID
     }).orderBy('dissolvedAt', 'desc')
-      .skip((page - 1) * pageSize)
-      .limit(pageSize)
+      .skip((page - 1) * limit)
+      .limit(limit)
       .get()
 
     return {

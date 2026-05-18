@@ -13,7 +13,7 @@ Page({
   onReachBottom() { if (this.data.hasMore) this.loadHistory() },
   onPullDownRefresh() {
     this.setData({ list: [], page: 1, hasMore: true })
-    this.loadHistory().then(() => wx.stopPullDownRefresh())
+    this.loadHistory().finally(() => wx.stopPullDownRefresh())
   },
 
   async loadHistory() {
