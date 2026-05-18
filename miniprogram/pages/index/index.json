@@ -1,4 +1,5 @@
 {
-  "navigationBarTitleText": "首页",
+  "navigationBarTitleText": "记分板",
+  "navigationStyle": "custom",
   "usingComponents": {}
 }

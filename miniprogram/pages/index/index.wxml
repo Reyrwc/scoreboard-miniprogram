@@ -1,4 +1,42 @@
-<!--pages/index/index.wxml-->
-<view class="container">
-  <text>首页</text>
+<view class="header">
+  <view class="header-title">记分板</view>
+</view>
+
+<view class="user-section">
+  <button class="avatar-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar" wx:if="{{!isLoggedIn}}">
+    <view class="avatar avatar-placeholder">?</view>
+  </button>
+  <image class="avatar" wx:if="{{isLoggedIn && userInfo.avatarUrl}}" src="{{userInfo.avatarUrl}}" mode="aspectFill"/>
+  <view class="avatar avatar-text" wx:if="{{isLoggedIn && !userInfo.avatarUrl}}">{{userInfo.nickname[0] || '?'}}</view>
+
+  <view class="nickname" wx:if="{{isLoggedIn}}">{{userInfo.nickname || '用户'}}</view>
+  <view class="nickname" wx:else>未登录</view>
+
+  <view class="stats-row" wx:if="{{isLoggedIn}}">
+    <view class="stat-item">
+      <view class="stat-value">{{userInfo.totalGames || 0}}</view>
+      <view class="stat-label">总场次</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-value">{{userInfo.totalGames > 0 ? ((userInfo.totalWins / userInfo.totalGames * 100).toFixed(1)) : '0.0'}}%</view>
+      <view class="stat-label">胜率</view>
+    </view>
+    <view class="stat-item">
+      <view class="stat-value {{(userInfo.totalWinScore - userInfo.totalLoseScore) >= 0 ? 'positive' : 'negative'}}">
+        {{(userInfo.totalWinScore - userInfo.totalLoseScore) >= 0 ? '+' : ''}}{{userInfo.totalWinScore - userInfo.totalLoseScore}}
+      </view>
+      <view class="stat-label">净得分</view>
+    </view>
+  </view>
+</view>
+
+<view class="actions">
+  <button class="btn btn-primary" bindtap="onCreateRoom">
+    <text>+</text>
+    创建房间
+  </button>
+  <button class="btn btn-secondary" bindtap="onScanCode">
+    <text>⊞</text>
+    扫码进房
+  </button>
 </view>
