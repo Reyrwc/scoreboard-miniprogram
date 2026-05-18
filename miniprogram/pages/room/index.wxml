@@ -1,4 +1,46 @@
-<!--pages/room/index.wxml-->
-<view class="container">
-  <text>记分房间</text>
+<view class="loading" wx:if="{{isLoading}}">
+  <text>加载中...</text>
+</view>
+
+<view class="room-page" wx:else>
+  <view class="nav-bar">
+    <view class="nav-title">{{room.name}}</view>
+    <view class="nav-subtitle">{{room.players.length}}人 · {{room.status === 'active' ? '进行中' : '已结束'}}</view>
+  </view>
+
+  <view class="content">
+    <view class="section-header">
+      <text class="section-label">积分排名</text>
+      <text class="round-badge" wx:if="{{room.currentRound > 0}}">第{{room.currentRound}}局</text>
+    </view>
+    <view class="player-grid">
+      <view class="player-card" wx:for="{{rankings}}" wx:key="openid" bindtap="onPlayerTap" data-player="{{item}}">
+        <view class="card-avatar">{{item.nickname[0] || '?'}}</view>
+        <view class="card-name">{{item.nickname || '玩家'}}</view>
+        <view class="card-score {{item.score > 0 ? 'score-pos' : item.score < 0 ? 'score-neg' : 'score-zero'}}">
+          {{item.score >= 0 ? '+' : ''}}{{item.score}}
+        </view>
+      </view>
+      <view class="player-card add-card" bindtap="onInvite">
+        <view class="card-avatar">+</view>
+        <view class="card-name">邀请</view>
+      </view>
+    </view>
+
+    <view class="section-header">
+      <text class="section-label">记分记录</text>
+    </view>
+    <view class="record-card" wx:if="{{scores.length > 0}}">
+      <view class="record-item" wx:for="{{scores}}" wx:key="_id">
+        <view class="record-text">{{item.fromNickname}} → {{item.toNickname}}</view>
+        <view class="record-note">{{item.note}}</view>
+        <view class="record-score">+{{item.amount}}</view>
+      </view>
+    </view>
+    <view class="empty-tip" wx:else>暂无记分记录</view>
+  </view>
+
+  <view class="bottom-bar">
+    <button class="btn-next" bindtap="onNextRound">下一局</button>
+  </view>
 </view>
