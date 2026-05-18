@@ -7,7 +7,7 @@ App({
     }
 
     wx.cloud.init({
-      env: 'scoreboard-prod',
+      env: 'cloud1-d2gi8awfvb18a2995',
       traceUser: true,
     })
 
