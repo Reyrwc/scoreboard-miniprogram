@@ -1,4 +1,36 @@
-<!--pages/friends/index.wxml-->
-<view class="container">
-  <text>好友排行</text>
+<view class="friends-page">
+  <view class="sort-tabs">
+    <view class="sort-tab {{sortBy === 'winRate' ? 'active' : ''}}" bindtap="onSort" data-sort="winRate">胜率</view>
+    <view class="sort-tab {{sortBy === 'totalGames' ? 'active' : ''}}" bindtap="onSort" data-sort="totalGames">总场次</view>
+    <view class="sort-tab {{sortBy === 'netScore' ? 'active' : ''}}" bindtap="onSort" data-sort="netScore">净得分</view>
+  </view>
+
+  <view class="top-three" wx:if="{{topThree.length > 0 && !loading}}">
+    <view class="top-item" wx:for="{{topThree}}" wx:key="_id">
+      <view class="top-rank {{index === 1 ? 'gold' : index === 0 ? 'silver' : 'bronze'}}">{{index === 1 ? '1' : index === 0 ? '2' : '3'}}</view>
+      <view class="top-avatar">{{item.nickname ? item.nickname[0] : '?'}}</view>
+      <view class="top-name">{{item.nickname || '未知'}}</view>
+      <view class="top-score">{{sortBy === 'winRate' ? item.winRate.toFixed(1) + '%' : sortBy === 'totalGames' ? item.totalGames + '场' : (item.netScore >= 0 ? '+' : '') + item.netScore}}</view>
+    </view>
+  </view>
+
+  <view class="section-title">全部好友</view>
+  <view class="rank-list" wx:if="{{!loading}}">
+    <view class="rank-item" wx:for="{{list}}" wx:key="_id">
+      <view class="rank-position">{{index + 1}}</view>
+      <view class="rank-avatar">{{item.nickname ? item.nickname[0] : '?'}}</view>
+      <view class="rank-info">
+        <view class="rank-name">{{item.nickname || '未知'}}</view>
+        <view class="rank-meta">{{item.totalGames}}场 · {{item.totalWins}}胜 · {{item.netScore >= 0 ? '+' : ''}}{{item.netScore}}</view>
+      </view>
+      <view class="rank-winrate">{{item.winRate.toFixed(1)}}%</view>
+    </view>
+  </view>
+
+  <view wx:if="{{loadError}}" class="error-state">
+    <text>加载失败</text>
+    <text class="retry-link" bindtap="onRetry">点击重试</text>
+  </view>
+  <view class="loading" wx:elif="{{loading}}">加载中...</view>
+  <view class="empty-tip" wx:elif="{{list.length === 0}}">暂无排行数据</view>
 </view>
