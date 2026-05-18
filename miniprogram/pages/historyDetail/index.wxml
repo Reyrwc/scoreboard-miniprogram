@@ -1,0 +1,4 @@
+<!--pages/historyDetail/index.wxml-->
+<view class="container">
+  <text>历史详情</text>
+</view>

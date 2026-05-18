@@ -1,0 +1,4 @@
+<!--pages/friends/index.wxml-->
+<view class="container">
+  <text>好友排行</text>
+</view>

@@ -1,0 +1,4 @@
+<!--pages/profile/index.wxml-->
+<view class="container">
+  <text>我的</text>
+</view>

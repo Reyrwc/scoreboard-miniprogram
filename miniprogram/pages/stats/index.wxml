@@ -1,0 +1,4 @@
+<!--pages/stats/index.wxml-->
+<view class="container">
+  <text>统计</text>
+</view>

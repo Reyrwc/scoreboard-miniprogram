@@ -1,0 +1,4 @@
+<!--pages/room/index.wxml-->
+<view class="container">
+  <text>记分房间</text>
+</view>
