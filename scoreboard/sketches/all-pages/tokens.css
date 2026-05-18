@@ -1,0 +1,72 @@
+/* 记分板 - 设计 Token (基于 iOS HIG) */
+:root {
+  /* 色彩系统 */
+  --color-primary: #007aff;
+  --color-primary-light: #e8f2ff;
+  --color-success: #34c759;
+  --color-danger: #ff3b30;
+  --color-warning: #ff9500;
+  --color-purple: #af52de;
+  
+  /* 中性色 */
+  --color-text: #1c1c1e;
+  --color-text-secondary: #8e8e93;
+  --color-text-tertiary: #aeaeb2;
+  --color-bg: #f2f2f7;
+  --color-card: #ffffff;
+  --color-border: rgba(0,0,0,0.1);
+  --color-border-light: rgba(0,0,0,0.05);
+  --color-bg-secondary: #f9f9f9;
+  
+  /* 圆角 */
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 12px;
+  --radius-full: 50%;
+  
+  /* 字体 */
+  --font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --font-xs: 11px;
+  --font-sm: 13px;
+  --font-base: 15px;
+  --font-md: 17px;
+  --font-lg: 20px;
+  --font-xl: 24px;
+  --font-2xl: 28px;
+  --font-3xl: 34px;
+  
+  /* 字重 */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  
+  /* 间距 */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 20px;
+  --space-2xl: 24px;
+  --space-3xl: 32px;
+  --space-4xl: 40px;
+  
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  
+  /* 过渡 */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+}
+
+/* SVG图标基础样式 */
+.icon {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.icon-sm { width: 20px; height: 20px; }
+.icon-lg { width: 28px; height: 28px; }

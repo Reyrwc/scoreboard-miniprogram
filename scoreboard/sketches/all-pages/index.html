@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>记分板 - 首页</title>
+  <link rel="stylesheet" href="tokens.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font-family);
+      background: var(--color-bg);
+      color: var(--color-text);
+      max-width: 390px;
+      min-height: 100vh;
+      margin: 0 auto;
+      -webkit-font-smoothing: antialiased;
+      padding-bottom: calc(80px + env(safe-area-inset-bottom));
+    }
+    .header {
+      background: var(--color-card);
+      padding: var(--space-lg);
+      text-align: center;
+      border-bottom: 0.5px solid var(--color-border);
+    }
+    .header-title { font-size: var(--font-md); font-weight: var(--weight-semibold); }
+    .user-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: var(--space-3xl) var(--space-lg) var(--space-xl);
+    }
+    .avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: var(--radius-full);
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: var(--weight-semibold);
+      margin-bottom: var(--space-md);
+    }
+    .nickname {
+      font-size: var(--font-lg);
+      font-weight: var(--weight-semibold);
+      margin-bottom: var(--space-xl);
+    }
+    .stats-row {
+      display: flex;
+      gap: var(--space-xl);
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: var(--font-xl);
+      font-weight: var(--weight-bold);
+      color: var(--color-text);
+    }
+    .stat-value.positive { color: var(--color-success); }
+    .stat-value.negative { color: var(--color-danger); }
+    .stat-label {
+      font-size: var(--font-xs);
+      color: var(--color-text-secondary);
+      margin-top: var(--space-xs);
+    }
+    .actions {
+      padding: 0 var(--space-lg);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-md);
+    }
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: var(--radius-md);
+      padding: 16px;
+      font-size: var(--font-md);
+      font-weight: var(--weight-semibold);
+      cursor: pointer;
+      transition: opacity var(--transition-fast);
+      font-family: var(--font-family);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-sm);
+    }
+    .btn:active { opacity: 0.7; }
+    .btn-primary { background: var(--color-primary); color: white; }
+    .btn-secondary { background: var(--color-card); color: var(--color-primary); border: 1px solid var(--color-border); }
+    .btn svg { width: 22px; height: 22px; }
+    .tab-bar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 390px;
+      background: var(--color-card);
+      border-top: 0.5px solid var(--color-border);
+      display: flex;
+      padding: var(--space-sm) 0;
+      padding-bottom: calc(var(--space-sm) + env(safe-area-inset-bottom));
+    }
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: var(--space-xs) 0;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .tab-item.active { color: var(--color-primary); }
+    .tab-icon svg { width: 24px; height: 24px; }
+    .tab-label { font-size: var(--font-xs); }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-title">记分板</div>
+  </div>
+  
+  <div class="user-section">
+    <div class="avatar">张</div>
+    <div class="nickname">张三</div>
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-value">28</div>
+        <div class="stat-label">总场次</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value">53.6%</div>
+        <div class="stat-label">胜率</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value positive">+420</div>
+        <div class="stat-label">净得分</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="actions">
+    <button class="btn btn-primary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+      创建房间
+    </button>
+    <button class="btn btn-secondary">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+      扫码进房
+    </button>
+  </div>
+  
+  <nav class="tab-bar">
+    <a class="tab-item active" href="index.html">
+      <span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
+      <span class="tab-label">首页</span>
+    </a>
+    <a class="tab-item" href="profile.html">
+      <span class="tab-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
+      <span class="tab-label">我的</span>
+    </a>
+  </nav>
+</body>
+</html>

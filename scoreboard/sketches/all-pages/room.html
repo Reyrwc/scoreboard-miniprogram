@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>记分板 - 房间</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; background: #f2f2f7; color: #1c1c1e; max-width: 390px; min-height: 100vh; margin: 0 auto; padding: 0; -webkit-font-smoothing: antialiased; }
+    .nav-bar { background: #fff; padding: 12px 16px; border-bottom: 0.5px solid rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 10; }
+    .nav-title { font-size: 17px; font-weight: 600; text-align: center; }
+    .nav-subtitle { font-size: 11px; color: #8e8e93; text-align: center; margin-top: 2px; }
+    .content { padding: 16px; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .section-label { font-size: 13px; font-weight: 600; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.5px; }
+    .round-badge { font-size: 11px; color: #fff; background: #007aff; padding: 2px 8px; border-radius: 10px; }
+    .player-grid { display: grid; gap: 12px; margin-bottom: 16px; }
+    .player-card { background: #fff; border-radius: 10px; padding: 12px; text-align: center; cursor: pointer; transition: transform 0.1s; }
+    .player-card:active { transform: scale(0.96); }
+    .card-avatar { width: 44px; height: 44px; border-radius: 50%; background: #e5e5ea; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600; color: #1c1c1e; margin: 0 auto 6px; }
+    .card-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+    .card-score { font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .score-pos { color: #34c759; }
+    .score-neg { color: #ff3b30; }
+    .score-zero { color: #8e8e93; }
+    .player-card.add-card { border: 2px dashed #007aff; }
+    .player-card.add-card .card-avatar { background: #e8f2ff; color: #007aff; }
+    .player-card.add-card .card-name { color: #007aff; }
+    .record-card { background: #fff; border-radius: 10px; overflow: hidden; }
+    .round-section { border-bottom: 0.5px solid rgba(0,0,0,0.05); }
+    .round-section:last-child { border-bottom: none; }
+    .round-header { padding: 10px 16px; background: #f9f9f9; font-size: 13px; font-weight: 600; color: #8e8e93; border-bottom: 0.5px solid rgba(0,0,0,0.05); }
+    .record-item { display: flex; align-items: center; padding: 10px 16px; border-bottom: 0.5px solid rgba(0,0,0,0.03); }
+    .record-item:last-child { border-bottom: none; }
+    .record-text { flex: 1; font-size: 15px; color: #1c1c1e; }
+    .record-note { font-size: 13px; color: #8e8e93; margin-left: 8px; }
+    .record-meta { text-align: right; }
+    .record-score { font-size: 15px; font-weight: 600; }
+    .record-time { font-size: 11px; color: #8e8e93; margin-top: 2px; }
+    .bottom-bar { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 390px; background: #fff; padding: 12px 16px; border-top: 0.5px solid rgba(0,0,0,0.1); }
+    .btn-next { width: 100%; background: #007aff; color: #fff; border: none; border-radius: 10px; padding: 14px; font-size: 17px; font-weight: 600; cursor: pointer; transition: opacity 0.1s; }
+    .btn-next:active { opacity: 0.7; }
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: flex-end; justify-content: center; }
+    .modal-overlay.active { display: flex; }
+    .modal-sheet { background: #fff; border-radius: 12px 12px 0 0; padding: 24px 16px; width: 100%; max-width: 390px; padding-bottom: 34px; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-title { font-size: 17px; font-weight: 600; }
+    .modal-close { font-size: 17px; color: #007aff; cursor: pointer; background: none; border: none; }
+    .input-row { display: flex; gap: 8px; margin-bottom: 12px; }
+    .score-input { flex: 1; background: #f2f2f7; border: none; border-radius: 8px; padding: 12px; font-size: 17px; font-weight: 600; text-align: center; outline: none; }
+    .quick-btns { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+    .quick-btn { background: #f2f2f7; border: none; border-radius: 8px; padding: 10px; font-size: 15px; font-weight: 600; cursor: pointer; color: #1c1c1e; }
+    .quick-btn:active { background: #e5e5ea; }
+    .note-input { width: 100%; background: #f2f2f7; border: none; border-radius: 8px; padding: 12px; font-size: 15px; outline: none; margin-bottom: 16px; }
+    .btn-submit { width: 100%; background: #007aff; color: #fff; border: none; border-radius: 10px; padding: 14px; font-size: 17px; font-weight: 600; cursor: pointer; }
+    .btn-submit:active { opacity: 0.7; }
+    .loading-toast { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 15px; z-index: 200; }
+    .loading-toast.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="nav-bar">
+    <div class="nav-title">张三的房间</div>
+    <div class="nav-subtitle">4人 · 进行中</div>
+  </div>
+
+  <div class="content">
+    <div class="section-header">
+      <span class="section-label">积分排名</span>
+      <span class="round-badge">第4局</span>
+    </div>
+    <div class="player-grid" id="playerGrid"></div>
+
+    <div class="section-header">
+      <span class="section-label">记分记录</span>
+    </div>
+    <div class="record-card">
+      <div class="round-section">
+        <div class="round-header">第三局</div>
+        <div class="record-item">
+          <div class="record-text">B → A <span class="record-note">自摸</span></div>
+          <div class="record-meta">
+            <div class="record-score score-pos">+8</div>
+            <div class="record-time">22:32</div>
+          </div>
+        </div>
+        <div class="record-item">
+          <div class="record-text">C → B <span class="record-note">杠</span></div>
+          <div class="record-meta">
+            <div class="record-score score-pos">+3</div>
+            <div class="record-time">22:30</div>
+          </div>
+        </div>
+      </div>
+      <div class="round-section">
+        <div class="round-header">第二局</div>
+        <div class="record-item">
+          <div class="record-text">A → B <span class="record-note">胡</span></div>
+          <div class="record-meta">
+            <div class="record-score score-pos">+4</div>
+            <div class="record-time">22:20</div>
+          </div>
+        </div>
+      </div>
+      <div class="round-section">
+        <div class="round-header">第一局</div>
+        <div class="record-item">
+          <div class="record-text">A → D <span class="record-note">杠</span></div>
+          <div class="record-meta">
+            <div class="record-score score-pos">+6</div>
+            <div class="record-time">22:10</div>
+          </div>
+        </div>
+        <div class="record-item">
+          <div class="record-text">B → D <span class="record-note">杠</span></div>
+          <div class="record-meta">
+            <div class="record-score score-pos">+6</div>
+            <div class="record-time">22:08</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-bar">
+    <button class="btn-next" onclick="nextRound()">下一局</button>
+  </div>
+
+  <div class="modal-overlay" id="modal">
+    <div class="modal-sheet">
+      <div class="modal-header">
+        <span></span>
+        <span class="modal-title">给 <span id="targetName">张三</span> 记分</span>
+        <button class="modal-close" onclick="closeModal()">取消</button>
+      </div>
+      <div class="input-row">
+        <input type="number" class="score-input" id="scoreInput" placeholder="分数" step="0.1" min="0.1">
+      </div>
+      <div class="quick-btns">
+        <button class="quick-btn" onclick="setScore(1)">+1</button>
+        <button class="quick-btn" onclick="setScore(3)">+3</button>
+        <button class="quick-btn" onclick="setScore(5)">+5</button>
+        <button class="quick-btn" onclick="setScore(10)">+10</button>
+        <button class="quick-btn" onclick="setScore(20)">+20</button>
+        <button class="quick-btn" onclick="setScore(50)">+50</button>
+        <button class="quick-btn" onclick="setScore(100)">+100</button>
+        <button class="quick-btn" onclick="setScore(200)">+200</button>
+      </div>
+      <input type="text" class="note-input" id="noteInput" placeholder="备注（选填）">
+      <button class="btn-submit" onclick="submit()">确认</button>
+    </div>
+  </div>
+
+  <div class="loading-toast" id="toast">提交中...</div>
+
+  <script>
+    let target = null;
+    let scores = [50, 30, -20, -60];
+    const names = ['张三', '李四', '王五', '赵六'];
+    const avatars = ['张', '李', '王', '赵'];
+
+    function getCols(total) {
+      if (total <= 4) return 4;
+      if (total === 5) return 5;
+      if (total <= 8) return 4;
+      return 5;
+    }
+
+    function render() {
+      const grid = document.getElementById('playerGrid');
+      const total = scores.length + 1;
+      const cols = getCols(total);
+      grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+      const idx = [...Array(scores.length).keys()].sort((a,b) => scores[b] - scores[a]);
+
+      let html = '';
+      idx.forEach(i => {
+        const s = scores[i];
+        const scoreClass = s > 0 ? 'score-pos' : s < 0 ? 'score-neg' : 'score-zero';
+        const scoreText = s >= 0 ? '+' + s : s;
+        html += `
+          <div class="player-card" onclick="openModal('${names[i]}', ${i})">
+            <div class="card-avatar">${avatars[i]}</div>
+            <div class="card-name">${names[i]}</div>
+            <div class="card-score ${scoreClass}">${scoreText}</div>
+          </div>
+        `;
+      });
+
+      html += `
+        <div class="player-card add-card" onclick="inviteFriend()">
+          <div class="card-avatar">+</div>
+          <div class="card-name">邀请</div>
+        </div>
+      `;
+
+      grid.innerHTML = html;
+    }
+
+    function openModal(name, idx) {
+      target = idx;
+      document.getElementById('targetName').textContent = name;
+      document.getElementById('modal').classList.add('active');
+      document.getElementById('scoreInput').value = '';
+      document.getElementById('noteInput').value = '';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').classList.remove('active');
+    }
+
+    function setScore(v) {
+      document.getElementById('scoreInput').value = v;
+    }
+
+    function submit() {
+      const s = parseFloat(document.getElementById('scoreInput').value);
+      if (!s || s <= 0) return alert('请输入正数');
+
+      document.getElementById('toast').classList.add('active');
+      setTimeout(() => {
+        scores[target] += s;
+        render();
+        document.getElementById('toast').classList.remove('active');
+        closeModal();
+      }, 500);
+    }
+
+    function nextRound() {
+      alert('下一局');
+    }
+
+    function inviteFriend() {
+      alert('生成邀请二维码/链接');
+    }
+
+    render();
+  </script>
+</body>
+</html>
