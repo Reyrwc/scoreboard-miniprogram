@@ -29,15 +29,10 @@ Page({
     try {
       wx.showLoading({ title: '创建中...' })
       const res = await api.createRoom()
-      if (res.code === 0) {
-        this.setData({ roomId: res.room._id })
-        this.loadRoom()
-      } else {
-        wx.showToast({ title: res.message, icon: 'none' })
-        wx.navigateBack()
-      }
+      this.setData({ roomId: res.room._id })
+      this.loadRoom()
     } catch (err) {
-      wx.showToast({ title: '创建失败', icon: 'none' })
+      wx.showToast({ title: err.message || '创建失败', icon: 'none' })
       wx.navigateBack()
     } finally {
       wx.hideLoading()
@@ -47,21 +42,16 @@ Page({
   async loadRoom() {
     try {
       const res = await api.getRoomInfo({ roomId: this.data.roomId })
-      if (res.code === 0) {
-        this.setData({
-          room: res.room,
-          rankings: res.rankings,
-          scores: res.scores,
-          isOwner: res.room.ownerId === app.globalData.openid,
-          isLoading: false
-        })
-        wx.setNavigationBarTitle({ title: res.room.name })
-      } else {
-        wx.showToast({ title: res.message, icon: 'none' })
-        wx.navigateBack()
-      }
+      this.setData({
+        room: res.room,
+        rankings: res.rankings,
+        scores: res.scores,
+        isOwner: res.room.ownerId === app.globalData.openid,
+        isLoading: false
+      })
+      wx.setNavigationBarTitle({ title: res.room.name })
     } catch (err) {
-      wx.showToast({ title: '加载失败', icon: 'none' })
+      wx.showToast({ title: err.message || '加载失败', icon: 'none' })
     }
   },
 
