@@ -44,10 +44,4 @@ Page({
     }
   },
 
-  formatScore(item) {
-    const sortBy = this.data.sortBy
-    if (sortBy === 'winRate') return item.winRate.toFixed(1) + '%'
-    if (sortBy === 'totalGames') return item.totalGames + '场'
-    return (item.netScore >= 0 ? '+' : '') + item.netScore
-  }
 })
