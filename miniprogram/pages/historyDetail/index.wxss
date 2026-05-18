@@ -1,1 +1,20 @@
-/**pages/historyDetail/index.wxss**/
+.detail-page { padding-bottom: 32rpx; }
+.room-info { background: var(--color-surface); margin: 32rpx; border-radius: var(--radius-md); padding: 32rpx; text-align: center; }
+.room-name { font-size: var(--font-size-xl); font-weight: var(--font-weight-bold); margin-bottom: 8rpx; }
+.room-date { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+.section-header { padding: 0 32rpx; margin-bottom: 16rpx; }
+.section-title { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 1rpx; }
+.rank-list { margin: 0 32rpx 32rpx; background: var(--color-surface); border-radius: var(--radius-md); overflow: hidden; }
+.rank-item { display: flex; align-items: center; padding: 24rpx 32rpx; border-bottom: 1rpx solid var(--color-divider); }
+.rank-item:last-child { border-bottom: none; }
+.rank-position { width: 56rpx; font-size: var(--font-size-md); font-weight: var(--font-weight-bold); color: var(--color-text-secondary); text-align: center; }
+.rank-position.top-1 { color: var(--color-warning); }
+.rank-position.top-2 { color: #c0c0c0; }
+.rank-position.top-3 { color: #cd7f32; }
+.rank-avatar { width: 80rpx; height: 80rpx; border-radius: var(--radius-round); background: var(--color-bg); display: flex; align-items: center; justify-content: center; font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); margin: 0 24rpx; }
+.rank-info { flex: 1; }
+.rank-name { font-size: var(--font-size-base); font-weight: var(--font-weight-medium); }
+.rank-score { font-size: var(--font-size-md); font-weight: var(--font-weight-bold); }
+.rank-score.positive { color: var(--color-success); }
+.rank-score.negative { color: var(--color-danger); }
+.loading { text-align: center; padding: 80rpx; color: var(--color-text-tertiary); }

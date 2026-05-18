@@ -1,4 +1,4 @@
 {
-  "navigationBarTitleText": "历史记录",
-  "usingComponents": {}
+  "navigationBarTitleText": "历史战绩",
+  "enablePullDownRefresh": true
 }
