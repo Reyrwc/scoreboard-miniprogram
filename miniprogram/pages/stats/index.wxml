@@ -1,4 +1,19 @@
-<!--pages/stats/index.wxml-->
-<view class="container">
-  <text>统计</text>
+<view wx:if="{{stats}}" class="stats-page">
+  <view class="overview-card">
+    <view class="overview-label">总胜率</view>
+    <view class="overview-value">{{stats.winRate}}%</view>
+    <view class="overview-sub">{{stats.totalGames}} 场比赛 · {{stats.totalWins}} 胜 {{stats.totalGames - stats.totalWins}} 负</view>
+  </view>
+  <view class="stats-grid">
+    <view class="stat-card"><view class="stat-label">总得分</view><view class="stat-value positive">+{{stats.totalWinScore}}</view></view>
+    <view class="stat-card"><view class="stat-label">总失分</view><view class="stat-value negative">-{{stats.totalLoseScore}}</view></view>
+    <view class="stat-card"><view class="stat-label">净得分</view><view class="stat-value {{stats.netScore >= 0 ? 'positive' : 'negative'}}">{{stats.netScore >= 0 ? '+' : ''}}{{stats.netScore}}</view></view>
+    <view class="stat-card"><view class="stat-label">最高连胜</view><view class="stat-value">{{stats.maxStreak}}</view></view>
+  </view>
+  <view class="section-title">详细数据</view>
+  <view class="detail-list">
+    <view class="detail-item"><text class="detail-label">最大单局赢分</text><text class="detail-value positive">+{{stats.maxSingleWin}}</text></view>
+    <view class="detail-item"><text class="detail-label">平均每局得分</text><text class="detail-value {{stats.avgScore >= 0 ? 'positive' : 'negative'}}">{{stats.avgScore >= 0 ? '+' : ''}}{{stats.avgScore}}</text></view>
+  </view>
 </view>
+<view class="loading" wx:else>加载中...</view>
