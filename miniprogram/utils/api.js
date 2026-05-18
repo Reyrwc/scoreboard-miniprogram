@@ -13,11 +13,13 @@ const callFunction = (name, data = {}) => {
     name,
     data,
   }).then(res => {
-    if (res.result && res.result.code === 0) {
-      return res.result
-    }
-    // 兼容直接返回结果的情况
     if (res.result) {
+      // 如果云函数返回了明确的错误码，抛出错误
+      if (res.result.code !== undefined && res.result.code !== 0) {
+        const err = new Error(res.result.message || '云函数调用失败')
+        err.code = res.result.code
+        throw err
+      }
       return res.result
     }
     return res
@@ -29,9 +31,10 @@ const callFunction = (name, data = {}) => {
 
 /**
  * 用户登录
+ * @param {object} data { code }
  */
-const login = () => {
-  return callFunction('login')
+const login = (data) => {
+  return callFunction('login', data)
 }
 
 /**

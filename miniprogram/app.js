@@ -11,7 +11,7 @@ App({
       traceUser: true,
     })
 
-    // 尝试获取已登录用户信息
+    // 尝试恢复登录态
     this._checkLogin()
   },
 
@@ -19,9 +19,9 @@ App({
    * 检查是否已有登录态
    */
   _checkLogin() {
-    const userInfo = wx.getStorageSync('userInfo')
-    if (userInfo) {
-      this.globalData.userInfo = userInfo
+    const openid = wx.getStorageSync('openid')
+    if (openid) {
+      this.globalData.openid = openid
     }
   },
 

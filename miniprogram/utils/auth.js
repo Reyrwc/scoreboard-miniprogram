@@ -5,28 +5,29 @@ const api = require('./api')
 
 /**
  * 用户登录
- * 使用 wx.getUserProfile 获取用户信息后调用云函数 login
- * @returns {Promise<object>} 用户信息
+ * 使用 wx.login 获取 code 后调用云函数 login 获取 openid
+ * @returns {Promise<object>} { openid }
  */
 const login = () => {
   return new Promise((resolve, reject) => {
-    wx.getUserProfile({
-      desc: '用于记分板用户信息展示',
-      success: (res) => {
-        const userInfo = res.userInfo
-        // 调用云函数完成登录
-        api.login().then(loginRes => {
-          const openid = loginRes.openid || ''
+    wx.login({
+      success: (loginRes) => {
+        if (!loginRes.code) {
+          reject(new Error('wx.login 获取 code 失败'))
+          return
+        }
+        // 调用云函数完成登录，传入 code
+        api.login({ code: loginRes.code }).then(res => {
+          const openid = res.openid || ''
           const app = getApp()
-          app.globalData.userInfo = userInfo
           app.globalData.openid = openid
-          // 缓存用户信息
-          wx.setStorageSync('userInfo', userInfo)
-          resolve({ userInfo, openid })
+          // 缓存登录态
+          wx.setStorageSync('openid', openid)
+          resolve({ openid })
         }).catch(reject)
       },
       fail: (err) => {
-        console.error('getUserProfile 失败:', err)
+        console.error('wx.login 失败:', err)
         reject(err)
       },
     })
@@ -39,7 +40,16 @@ const login = () => {
  */
 const checkLogin = () => {
   const app = getApp()
-  return !!(app.globalData && app.globalData.userInfo)
+  if (app.globalData && app.globalData.openid) {
+    return true
+  }
+  // 尝试从缓存恢复
+  const cachedOpenid = wx.getStorageSync('openid')
+  if (cachedOpenid) {
+    app.globalData.openid = cachedOpenid
+    return true
+  }
+  return false
 }
 
 module.exports = {
