@@ -13,7 +13,6 @@ Page({
     showScoreModal: false,
     targetPlayer: null,
     cooldown: 0,
-    cooldownTimer: null
   },
 
   onLoad(options) {
@@ -27,7 +26,7 @@ Page({
   onUnload() {
     if (this.roomWatcher) this.roomWatcher.close()
     if (this.scoreWatcher) this.scoreWatcher.close()
-    if (this.data.cooldownTimer) clearInterval(this.data.cooldownTimer)
+    if (this.cooldownTimer) clearInterval(this.cooldownTimer)
   },
 
   async joinRoom(roomId) {
@@ -73,6 +72,7 @@ Page({
       wx.setNavigationBarTitle({ title: res.room.name })
       this.watchRoom()
     } catch (err) {
+      this.setData({ isLoading: false })
       wx.showToast({ title: err.message || '加载失败', icon: 'none' })
     }
   },
@@ -144,6 +144,9 @@ Page({
   },
 
   onShareAppMessage() {
+    if (!this.data.room) {
+      return { title: '邀请你加入记分', path: '/pages/index/index' }
+    }
     return {
       title: `邀请你加入「${this.data.room.name}」`,
       path: `/pages/room/index?roomId=${this.data.roomId}`
@@ -163,9 +166,9 @@ Page({
 
   startCooldown() {
     this.setData({ cooldown: 60 })
-    this.data.cooldownTimer = setInterval(() => {
+    this.cooldownTimer = setInterval(() => {
       if (this.data.cooldown <= 0) {
-        clearInterval(this.data.cooldownTimer)
+        clearInterval(this.cooldownTimer)
         return
       }
       this.setData({ cooldown: this.data.cooldown - 1 })
@@ -173,6 +176,10 @@ Page({
   },
 
   watchRoom() {
+    // Close existing watchers first
+    if (this.roomWatcher) this.roomWatcher.close()
+    if (this.scoreWatcher) this.scoreWatcher.close()
+
     const db = wx.cloud.database()
     const roomId = this.data.roomId
 
@@ -182,7 +189,6 @@ Page({
         const room = snapshot.docs[0]
         if (!room) return
         this.setData({ room })
-        this.calcRankings()
       },
       onError: (err) => {
         console.error('房间监听失败:', err)
@@ -209,15 +215,16 @@ Page({
     const { room, scores } = this.data
     if (!room) return
 
-    const rankings = room.players.map(p => {
-      const totalScore = scores
-        .filter(s => s.toOpenid === p.openid)
-        .reduce((sum, s) => sum + s.amount, 0)
-        - scores
-        .filter(s => s.fromOpenid === p.openid)
-        .reduce((sum, s) => sum + s.amount, 0)
-      return { ...p, score: totalScore }
-    }).sort((a, b) => b.score - a.score)
+    const scoreMap = {}
+    scores.forEach(s => {
+      scoreMap[s.toOpenid] = (scoreMap[s.toOpenid] || 0) + s.amount
+      scoreMap[s.fromOpenid] = (scoreMap[s.fromOpenid] || 0) - s.amount
+    })
+
+    const rankings = room.players.map(p => ({
+      ...p,
+      score: scoreMap[p.openid] || 0
+    })).sort((a, b) => b.score - a.score)
 
     this.setData({ rankings })
   }

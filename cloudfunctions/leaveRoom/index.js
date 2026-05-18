@@ -8,27 +8,32 @@ exports.main = async (event, context) => {
   const { roomId } = event
 
   try {
+    if (!roomId) return { code: -1, message: '缺少房间ID' }
+
     const roomRes = await db.collection('rooms').doc(roomId).get()
     const room = roomRes.data
 
-    // 如果是最后一个玩家，解散房间
-    if (room.players.length <= 1) {
-      await db.collection('rooms').doc(roomId).update({
-        data: { status: 'dissolved', dissolvedAt: db.serverDate() }
-      })
-      return { code: 0 }
+    // Validate caller is a member
+    if (!room.players.some(p => p.openid === OPENID)) {
+      return { code: -1, message: '你不在该房间中' }
     }
 
-    // 如果是房主，转移房主
-    const updates = {
-      players: _.pull({ openid: OPENID })
-    }
+    // Pull the player first
+    const updates = { players: _.pull({ openid: OPENID }) }
     if (room.ownerId === OPENID) {
       const nextOwner = room.players.find(p => p.openid !== OPENID)
       if (nextOwner) updates.ownerId = nextOwner.openid
     }
-
     await db.collection('rooms').doc(roomId).update({ data: updates })
+
+    // Re-read to check if empty
+    const updatedRoomRes = await db.collection('rooms').doc(roomId).get()
+    if (updatedRoomRes.data.players.length === 0) {
+      await db.collection('rooms').doc(roomId).update({
+        data: { status: 'dissolved', dissolvedAt: db.serverDate() }
+      })
+    }
+
     return { code: 0 }
   } catch (err) {
     console.error('leaveRoom error:', err)

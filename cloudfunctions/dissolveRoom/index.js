@@ -7,6 +7,8 @@ exports.main = async (event, context) => {
   const { roomId } = event
 
   try {
+    if (!roomId) return { code: -1, message: '缺少房间ID' }
+
     const roomRes = await db.collection('rooms').doc(roomId).get()
     const room = roomRes.data
 
@@ -54,7 +56,7 @@ exports.main = async (event, context) => {
     })
 
     // 更新用户统计
-    for (const player of rankedPlayers) {
+    await Promise.all(rankedPlayers.map(player => {
       const isWin = player.rank === 1
       const userUpdate = {
         totalGames: db.command.inc(1),
@@ -63,8 +65,8 @@ exports.main = async (event, context) => {
         updatedAt: db.serverDate()
       }
       if (isWin) userUpdate.totalWins = db.command.inc(1)
-      await db.collection('users').doc(player.openid).update({ data: userUpdate })
-    }
+      return db.collection('users').doc(player.openid).update({ data: userUpdate })
+    }))
 
     return { code: 0, history }
   } catch (err) {

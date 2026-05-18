@@ -21,10 +21,6 @@
     </view>
     <view class="player-grid">
       <player-card wx:for="{{rankings}}" wx:key="openid" player="{{item}}" rank="{{index + 1}}" bind:tap="onPlayerTap" />
-      <view class="player-card add-card" wx:if="{{isActive}}">
-        <view class="card-avatar">+</view>
-        <view class="card-name">邀请</view>
-      </view>
     </view>
 
     <view class="section-header">
