@@ -11,7 +11,9 @@ Page({
     isLoading: true,
     isActive: false,
     showScoreModal: false,
-    targetPlayer: null
+    targetPlayer: null,
+    cooldown: 0,
+    cooldownTimer: null
   },
 
   onLoad(options) {
@@ -25,6 +27,7 @@ Page({
   onUnload() {
     if (this.roomWatcher) this.roomWatcher.close()
     if (this.scoreWatcher) this.scoreWatcher.close()
+    if (this.data.cooldownTimer) clearInterval(this.data.cooldownTimer)
   },
 
   async joinRoom(roomId) {
@@ -105,7 +108,25 @@ Page({
     // Will be implemented in Task 4 (join room)
   },
 
-  onNextRound() {
-    // Will be implemented in Task 6 (next round)
+  async onNextRound() {
+    if (this.data.cooldown > 0) return
+    try {
+      await api.nextRound({ roomId: this.data.roomId })
+      this.startCooldown()
+      this.loadRoom()
+    } catch (err) {
+      wx.showToast({ title: err.message || '操作失败', icon: 'none' })
+    }
+  },
+
+  startCooldown() {
+    this.setData({ cooldown: 60 })
+    this.data.cooldownTimer = setInterval(() => {
+      if (this.data.cooldown <= 0) {
+        clearInterval(this.data.cooldownTimer)
+        return
+      }
+      this.setData({ cooldown: this.data.cooldown - 1 })
+    }, 1000)
   }
 })

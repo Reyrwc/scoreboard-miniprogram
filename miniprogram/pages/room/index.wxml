@@ -35,7 +35,9 @@
   </view>
 
   <view class="bottom-bar" wx:if="{{isActive}}">
-    <button class="btn-next" bindtap="onNextRound">下一局</button>
+    <button class="btn-next" disabled="{{cooldown > 0}}" bindtap="onNextRound">
+      {{cooldown > 0 ? '请等待 ' + cooldown + ' 秒' : '下一局'}}
+    </button>
   </view>
 
   <score-modal visible="{{showScoreModal}}" targetPlayer="{{targetPlayer}}" bind:close="onScoreClose" bind:confirm="onScoreConfirm" />
