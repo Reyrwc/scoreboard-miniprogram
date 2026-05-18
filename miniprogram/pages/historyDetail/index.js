@@ -7,8 +7,8 @@ Page({
   },
   async loadDetail(roomId) {
     try {
-      const res = await api.getHistory({ page: 1, pageSize: 100 })
-      const history = res.list.find(h => h.roomId === roomId)
+      const res = await api.getHistory({ roomId })
+      const history = res.list.length > 0 ? res.list[0] : null
       this.setData({ history, loading: false })
     } catch (err) {
       wx.showToast({ title: '加载失败', icon: 'none' })

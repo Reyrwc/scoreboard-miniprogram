@@ -4,9 +4,23 @@ const db = cloud.database()
 
 exports.main = async (event, context) => {
   const { OPENID } = cloud.getWXContext()
-  const { page = 1, pageSize = 20 } = event
+  const { page = 1, pageSize = 20, roomId } = event
 
   try {
+    // Single record lookup by roomId
+    if (roomId) {
+      const res = await db.collection('history').where({
+        roomId,
+        'players.openid': OPENID
+      }).limit(1).get()
+      return {
+        code: 0,
+        list: res.data,
+        total: res.data.length
+      }
+    }
+
+    // Existing pagination logic
     const countRes = await db.collection('history').where({
       'players.openid': OPENID
     }).count()
