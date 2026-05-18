@@ -105,8 +105,49 @@ Page({
     }
   },
 
-  onInvite() {
-    // Will be implemented in Task 4 (join room)
+  onDissolve() {
+    wx.showModal({
+      title: '确认解散',
+      content: '解散后将保存战绩，确定解散房间？',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            wx.showLoading({ title: '解散中...' })
+            await api.dissolveRoom({ roomId: this.data.roomId })
+            wx.showToast({ title: '房间已解散', icon: 'success' })
+            setTimeout(() => wx.navigateBack(), 1500)
+          } catch (err) {
+            wx.showToast({ title: err.message || '解散失败', icon: 'none' })
+          } finally {
+            wx.hideLoading()
+          }
+        }
+      }
+    })
+  },
+
+  onLeave() {
+    wx.showModal({
+      title: '确认退出',
+      content: '退出后分数保留，确定退出房间？',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            await api.leaveRoom({ roomId: this.data.roomId })
+            wx.navigateBack()
+          } catch (err) {
+            wx.showToast({ title: err.message || '退出失败', icon: 'none' })
+          }
+        }
+      }
+    })
+  },
+
+  onShareAppMessage() {
+    return {
+      title: `邀请你加入「${this.data.room.name}」`,
+      path: `/pages/room/index?roomId=${this.data.roomId}`
+    }
   },
 
   async onNextRound() {

@@ -70,3 +70,21 @@
   font-weight: var(--font-weight-semibold);
 }
 .btn-next::after { border: none; }
+.action-bar {
+  display: flex;
+  gap: 16rpx;
+  padding: 16rpx 32rpx;
+  background: var(--color-surface);
+  border-bottom: 1rpx solid var(--color-divider);
+}
+.action-btn {
+  flex: 1;
+  background: var(--color-bg);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 16rpx;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+.action-btn.danger { color: var(--color-danger); }
+.action-btn::after { border: none; }

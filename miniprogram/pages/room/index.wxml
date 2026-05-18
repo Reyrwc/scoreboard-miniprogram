@@ -8,6 +8,12 @@
     <view class="nav-subtitle">{{room.players.length}}人 · {{room.status === 'active' ? '进行中' : '已结束'}}</view>
   </view>
 
+  <view class="action-bar" wx:if="{{isActive}}">
+    <button class="action-btn" open-type="share">邀请</button>
+    <button class="action-btn" bindtap="onLeave" wx:if="{{!isOwner}}">退出</button>
+    <button class="action-btn danger" bindtap="onDissolve" wx:if="{{isOwner}}">解散</button>
+  </view>
+
   <view class="content">
     <view class="section-header">
       <text class="section-label">积分排名</text>
@@ -15,7 +21,7 @@
     </view>
     <view class="player-grid">
       <player-card wx:for="{{rankings}}" wx:key="openid" player="{{item}}" rank="{{index + 1}}" bind:tap="onPlayerTap" />
-      <view class="player-card add-card" wx:if="{{isActive}}" bindtap="onInvite">
+      <view class="player-card add-card" wx:if="{{isActive}}">
         <view class="card-avatar">+</view>
         <view class="card-name">邀请</view>
       </view>
