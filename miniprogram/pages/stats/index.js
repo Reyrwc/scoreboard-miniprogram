@@ -1,7 +1,7 @@
 const api = require('../../utils/api')
 
 Page({
-  data: { stats: null, loading: true },
+  data: { stats: null, loading: true, loadError: false },
   onLoad() { this.loadStats() },
   async loadStats() {
     try {
@@ -9,7 +9,11 @@ Page({
       this.setData({ stats: res.stats, loading: false })
     } catch (err) {
       wx.showToast({ title: '加载失败', icon: 'none' })
-      this.setData({ loading: false })
+      this.setData({ loading: false, loadError: true })
     }
+  },
+  onRetry() {
+    this.setData({ loading: true, loadError: false })
+    this.loadStats()
   }
 })

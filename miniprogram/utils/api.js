@@ -126,7 +126,7 @@ const getFriendsRank = (data) => {
 
 /**
  * 更新用户信息
- * @param {object} data { nickName, avatarUrl }
+ * @param {object} data { nickname, avatarUrl }
  */
 const updateUserInfo = (data) => {
   return callFunction('updateUserInfo', data)

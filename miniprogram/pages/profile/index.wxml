@@ -3,13 +3,13 @@
     <view class="avatar">{{userInfo.nickname ? userInfo.nickname[0] : '?'}}</view>
     <view class="profile-info">
       <view class="profile-name">{{userInfo.nickname || '未设置昵称'}}</view>
-      <view class="profile-id">ID: {{userInfo._id}}</view>
     </view>
   </view>
   <view class="profile-card" wx:else>
     <view class="avatar">?</view>
     <view class="profile-info">
       <view class="profile-name">未登录</view>
+      <button class="login-btn" bindtap="onLogin">点击登录</button>
     </view>
   </view>
   <view class="quick-stats" wx:if="{{userInfo}}">

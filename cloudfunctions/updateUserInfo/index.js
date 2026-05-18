@@ -8,8 +8,18 @@ exports.main = async (event, context) => {
 
   try {
     const updates = { updatedAt: db.serverDate() }
-    if (nickname) updates.nickname = nickname
-    if (avatarUrl) updates.avatarUrl = avatarUrl
+
+    if (nickname !== undefined && nickname !== null) {
+      const trimmed = String(nickname).trim()
+      if (trimmed.length > 20) {
+        return { code: -1, message: '昵称不能超过20个字符' }
+      }
+      updates.nickname = trimmed
+    }
+
+    if (avatarUrl !== undefined && avatarUrl !== null) {
+      updates.avatarUrl = avatarUrl
+    }
 
     await db.collection('users').doc(OPENID).update({ data: updates })
     return { code: 0 }

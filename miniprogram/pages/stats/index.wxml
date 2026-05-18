@@ -16,4 +16,8 @@
     <view class="detail-item"><text class="detail-label">平均每局得分</text><text class="detail-value {{stats.avgScore >= 0 ? 'positive' : 'negative'}}">{{stats.avgScore >= 0 ? '+' : ''}}{{stats.avgScore}}</text></view>
   </view>
 </view>
+<view wx:elif="{{loadError}}" class="error-state">
+  <text>加载失败</text>
+  <text class="retry-link" bindtap="onRetry">点击重试</text>
+</view>
 <view class="loading" wx:else>加载中...</view>

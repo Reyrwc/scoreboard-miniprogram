@@ -18,3 +18,5 @@
 .detail-value.positive { color: var(--color-success); }
 .detail-value.negative { color: var(--color-danger); }
 .loading { text-align: center; padding: 80rpx; color: var(--color-text-tertiary); }
+.error-state { text-align: center; padding: 80rpx; color: var(--color-text-tertiary); }
+.retry-link { color: var(--color-primary); margin-left: 8rpx; }

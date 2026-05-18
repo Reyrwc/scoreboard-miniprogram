@@ -17,7 +17,7 @@ exports.main = async (event, context) => {
       netScore: (user.totalWinScore || 0) - (user.totalLoseScore || 0),
       maxSingleWin: user.maxSingleWin || 0,
       maxStreak: user.maxStreak || 0,
-      winRate: user.totalGames > 0 ? ((user.totalWins / user.totalGames) * 100).toFixed(1) : '0.0',
+      winRate: user.totalGames > 0 ? parseFloat(((user.totalWins / user.totalGames) * 100).toFixed(1)) : 0,
       avgScore: user.totalGames > 0 ? Math.round(((user.totalWinScore || 0) - (user.totalLoseScore || 0)) / user.totalGames) : 0
     }
 

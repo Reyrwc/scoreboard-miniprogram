@@ -8,6 +8,14 @@ Page({
   goHistory() { wx.navigateTo({ url: '/pages/history/index' }) },
   goStats() { wx.navigateTo({ url: '/pages/stats/index' }) },
   goFriends() { wx.navigateTo({ url: '/pages/friends/index' }) },
+  onLogin() {
+    const auth = require('../../utils/auth')
+    auth.login().then(() => {
+      this.setData({ userInfo: app.globalData.userInfo })
+    }).catch(err => {
+      wx.showToast({ title: '登录失败', icon: 'none' })
+    })
+  },
   onLogout() {
     wx.showModal({
       title: '确认退出',
