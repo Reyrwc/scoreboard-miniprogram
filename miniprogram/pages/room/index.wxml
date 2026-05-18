@@ -24,14 +24,7 @@
     <view class="section-header">
       <text class="section-label">记分记录</text>
     </view>
-    <view class="record-card" wx:if="{{scores.length > 0}}">
-      <view class="record-item" wx:for="{{scores}}" wx:key="_id">
-        <view class="record-text">{{item.fromNickname}} → {{item.toNickname}}</view>
-        <view class="record-note">{{item.note}}</view>
-        <view class="record-score">+{{item.amount}}</view>
-      </view>
-    </view>
-    <view class="empty-tip" wx:else>暂无记分记录</view>
+    <score-record scores="{{scores}}" roundNum="{{room.currentRound}}" />
   </view>
 
   <view class="bottom-bar" wx:if="{{isActive}}">

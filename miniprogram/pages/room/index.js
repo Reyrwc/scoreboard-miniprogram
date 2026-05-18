@@ -71,6 +71,7 @@ Page({
         isActive: res.room.status === 'active'
       })
       wx.setNavigationBarTitle({ title: res.room.name })
+      this.watchRoom()
     } catch (err) {
       wx.showToast({ title: err.message || '加载失败', icon: 'none' })
     }
@@ -128,5 +129,55 @@ Page({
       }
       this.setData({ cooldown: this.data.cooldown - 1 })
     }, 1000)
+  },
+
+  watchRoom() {
+    const db = wx.cloud.database()
+    const roomId = this.data.roomId
+
+    // 监听房间变化
+    this.roomWatcher = db.collection('rooms').doc(roomId).watch({
+      onChange: (snapshot) => {
+        const room = snapshot.docs[0]
+        if (!room) return
+        this.setData({ room })
+        this.calcRankings()
+      },
+      onError: (err) => {
+        console.error('房间监听失败:', err)
+      }
+    })
+
+    // 监听记分记录变化
+    this.scoreWatcher = db.collection('scores')
+      .where({ roomId })
+      .orderBy('createdAt', 'desc')
+      .limit(50)
+      .watch({
+        onChange: (snapshot) => {
+          this.setData({ scores: snapshot.docs })
+          this.calcRankings()
+        },
+        onError: (err) => {
+          console.error('记分监听失败:', err)
+        }
+      })
+  },
+
+  calcRankings() {
+    const { room, scores } = this.data
+    if (!room) return
+
+    const rankings = room.players.map(p => {
+      const totalScore = scores
+        .filter(s => s.toOpenid === p.openid)
+        .reduce((sum, s) => sum + s.amount, 0)
+        - scores
+        .filter(s => s.fromOpenid === p.openid)
+        .reduce((sum, s) => sum + s.amount, 0)
+      return { ...p, score: totalScore }
+    }).sort((a, b) => b.score - a.score)
+
+    this.setData({ rankings })
   }
 })

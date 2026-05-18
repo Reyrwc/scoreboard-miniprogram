@@ -1,0 +1,10 @@
+<view class="record-card" wx:if="{{scores.length > 0}}">
+  <view class="record-item" wx:for="{{scores}}" wx:key="_id">
+    <view class="record-text">{{item.fromNickname}} → {{item.toNickname}}</view>
+    <view class="record-note" wx:if="{{item.note}}">{{item.note}}</view>
+    <view class="record-meta">
+      <view class="record-score">+{{item.amount}}</view>
+    </view>
+  </view>
+</view>
+<view class="empty-tip" wx:else>暂无记分记录</view>
