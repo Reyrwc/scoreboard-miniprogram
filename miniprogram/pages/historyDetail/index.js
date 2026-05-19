@@ -1,8 +1,15 @@
 const api = require('../../utils/api')
+const icons = require('../../utils/icons')
 const { formatDate } = require('../../utils/util')
 
 Page({
-  data: { history: null, loading: true },
+  data: {
+    history: null,
+    loading: true,
+    icons: {
+      share: icons.shareWhite
+    }
+  },
   onLoad(options) {
     if (options.roomId) {
       this.loadDetail(options.roomId)

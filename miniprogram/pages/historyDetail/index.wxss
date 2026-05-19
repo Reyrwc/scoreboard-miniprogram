@@ -17,4 +17,12 @@
 .rank-score { font-size: var(--font-size-md); font-weight: var(--font-weight-bold); }
 .rank-score.positive { color: var(--color-success); }
 .rank-score.negative { color: var(--color-danger); }
+.stats-row { display: flex; gap: 16rpx; padding: 0 32rpx; margin-bottom: 32rpx; }
+.stat-card { flex: 1; background: var(--color-surface); border-radius: var(--radius-md); padding: 24rpx 16rpx; text-align: center; }
+.stat-value { font-size: var(--font-size-xl); font-weight: var(--font-weight-bold); color: var(--color-primary); }
+.stat-label { font-size: var(--font-size-xs); color: var(--color-text-secondary); margin-top: 8rpx; }
+.bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--color-surface); padding: 24rpx 32rpx; padding-bottom: calc(24rpx + env(safe-area-inset-bottom)); border-top: 1rpx solid var(--color-border); }
+.btn-share { width: 100%; background: var(--color-primary); color: #fff; border: none; border-radius: var(--radius-base); padding: 24rpx; font-size: var(--font-size-md); font-weight: var(--font-weight-medium); display: flex; align-items: center; justify-content: center; gap: 12rpx; }
+.btn-share::after { border: none; }
+.btn-share-icon { width: 40rpx; height: 40rpx; }
 .loading { text-align: center; padding: 80rpx; color: var(--color-text-tertiary); }

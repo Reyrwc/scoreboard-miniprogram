@@ -4,9 +4,10 @@
 const api = require('./api')
 
 /**
- * 用户登录
- * 使用 wx.login 获取 code 后调用云函数 login 获取 openid
- * @returns {Promise<object>} { openid }
+ * 用户登录（静默获取 openid）
+ * wx.login 获取 code，直接调用云函数换取 openid
+ * 用户头像和昵称通过 profile 页面的 button 组件设置
+ * @returns {Promise<object>} { openid, user }
  */
 const login = () => {
   return new Promise((resolve, reject) => {
@@ -16,14 +17,12 @@ const login = () => {
           reject(new Error('wx.login 获取 code 失败'))
           return
         }
-        // 调用云函数完成登录，传入 code
         api.login({ code: loginRes.code }).then(res => {
           const openid = res.openid || ''
           const app = getApp()
           app.globalData.openid = openid
-          // 缓存登录态
           wx.setStorageSync('openid', openid)
-          resolve({ openid })
+          resolve({ openid, user: res.user })
         }).catch(reject)
       },
       fail: (err) => {

@@ -8,7 +8,10 @@
   <view class="top-three" wx:if="{{topThree.length > 0 && !loading}}">
     <view class="top-item" wx:for="{{topThree}}" wx:key="_id">
       <view class="top-rank {{item.displayRank === 1 ? 'gold' : item.displayRank === 2 ? 'silver' : 'bronze'}}">{{item.displayRank}}</view>
-      <view class="top-avatar">{{item.nickname ? item.nickname[0] : '?'}}</view>
+      <view class="top-avatar-wrap">
+        <text class="top-crown" wx:if="{{item.displayRank === 1}}"></text>
+        <view class="top-avatar">{{item.nickname ? item.nickname[0] : '?'}}</view>
+      </view>
       <view class="top-name">{{item.nickname || '未知'}}</view>
       <view class="top-score">{{item.scoreStr}}</view>
     </view>

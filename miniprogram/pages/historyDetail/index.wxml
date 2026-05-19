@@ -3,6 +3,22 @@
     <view class="room-name">{{history.roomName}}</view>
     <view class="room-date">{{history.dateLabel}} · {{history.playerCount}}人 · {{history.roundCount}}局</view>
   </view>
+
+  <view class="stats-row">
+    <view class="stat-card">
+      <view class="stat-value">{{history.roundCount}}</view>
+      <view class="stat-label">总轮次</view>
+    </view>
+    <view class="stat-card">
+      <view class="stat-value">{{history.playerCount}}</view>
+      <view class="stat-label">玩家数</view>
+    </view>
+    <view class="stat-card">
+      <view class="stat-value">{{history.totalScores}}</view>
+      <view class="stat-label">总记分</view>
+    </view>
+  </view>
+
   <view class="section-header">
     <text class="section-title">最终排名</text>
   </view>
@@ -17,6 +33,13 @@
         {{item.finalScore >= 0 ? '+' : ''}}{{item.finalScore}}
       </view>
     </view>
+  </view>
+
+  <view class="bottom-bar">
+    <button class="btn-share" open-type="share">
+      <image class="btn-share-icon" src="{{icons.share}}"/>
+      分享战绩
+    </button>
   </view>
 </view>
 <view class="loading" wx:else>加载中...</view>
