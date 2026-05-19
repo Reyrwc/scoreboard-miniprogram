@@ -1,33 +1,6 @@
 <view class="profile-page">
-  <!-- 已登录 -->
-  <view class="profile-card" wx:if="{{userInfo}}">
-    <view class="avatar-wrapper">
-      <image class="avatar-img" wx:if="{{userInfo.avatarUrl}}" src="{{userInfo.avatarUrl}}" mode="aspectFill"/>
-      <view class="avatar" wx:else>{{userInfo.nickname ? userInfo.nickname[0] : '?'}}</view>
-      <button class="avatar-edit" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar">
-        <image class="avatar-edit-icon" src="{{icons.edit}}"/>
-      </button>
-    </view>
-    <view class="profile-info">
-      <view class="profile-name">{{userInfo.nickname || '用户'}}</view>
-    </view>
-    <view class="profile-edit" bindtap="onEditNickname">编辑</view>
-  </view>
-
-  <!-- 编辑昵称弹窗 -->
-  <view class="edit-modal" wx:if="{{showNicknameEdit}}" catchtap="onCloseEdit">
-    <view class="edit-modal-content" catchtap="">
-      <view class="edit-modal-title">修改昵称</view>
-      <input class="edit-modal-input" type="nickname" value="{{editNickname}}" bindinput="onNicknameInput" placeholder="请输入昵称" maxlength="20"/>
-      <view class="edit-modal-actions">
-        <view class="edit-modal-btn cancel" bindtap="onCloseEdit">取消</view>
-        <view class="edit-modal-btn confirm" bindtap="onSaveNickname">保存</view>
-      </view>
-    </view>
-  </view>
-
   <!-- 未登录 -->
-  <view class="profile-card" wx:else>
+  <view class="profile-card" wx:if="{{!isLoggedIn}}">
     <view class="avatar-wrapper">
       <view class="avatar">?</view>
     </view>
@@ -37,8 +10,8 @@
     </view>
   </view>
 
-  <!-- 登录后首次设置 -->
-  <view class="setup-card" wx:if="{{userInfo && !userInfo.nickname}}">
+  <!-- 已登录但未设置昵称：首次设置 -->
+  <view class="setup-card" wx:elif="{{isLoggedIn && !userInfo.nickname}}">
     <view class="setup-title">完善个人信息</view>
     <view class="setup-desc">设置头像和昵称，让好友认识你</view>
     <view class="setup-form">
@@ -57,7 +30,35 @@
     <button class="setup-save-btn" bindtap="onSaveProfile">保存</button>
   </view>
 
-  <view class="quick-stats" wx:if="{{userInfo}}">
+  <!-- 已登录且已设置昵称：正常展示 -->
+  <view class="profile-card" wx:elif="{{isLoggedIn && userInfo.nickname}}">
+    <view class="avatar-wrapper">
+      <image class="avatar-img" wx:if="{{userInfo.avatarUrl}}" src="{{userInfo.avatarUrl}}" mode="aspectFill"/>
+      <view class="avatar" wx:else>{{userInfo.nickname[0]}}</view>
+      <view class="avatar-edit-icon-wrap">
+        <image class="avatar-edit-icon" src="{{icons.edit}}"/>
+      </view>
+      <button class="avatar-edit-btn" open-type="chooseAvatar" bindchooseavatar="onChooseAvatar"></button>
+    </view>
+    <view class="profile-info">
+      <view class="profile-name">{{userInfo.nickname}}</view>
+    </view>
+    <view class="profile-edit" bindtap="onEditNickname">编辑</view>
+  </view>
+
+  <!-- 编辑昵称弹窗 -->
+  <view class="edit-modal" hidden="{{!showNicknameEdit}}" catchtap="onTapModalOverlay">
+    <view class="edit-modal-content" catchtap="onTapModalContent">
+      <view class="edit-modal-title">修改昵称</view>
+      <input class="edit-modal-input" type="nickname" value="{{editNickname}}" bindinput="onNicknameInput" placeholder="请输入昵称" maxlength="20"/>
+      <view class="edit-modal-actions">
+        <view class="edit-modal-btn cancel" bindtap="onCloseEdit">取消</view>
+        <view class="edit-modal-btn confirm" bindtap="onSaveNickname">保存</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="quick-stats" wx:if="{{isLoggedIn && userInfo.nickname}}">
     <view class="quick-stat"><view class="quick-stat-value">{{userInfo.totalGames || 0}}</view><view class="quick-stat-label">总场次</view></view>
     <view class="quick-stat"><view class="quick-stat-value">{{userInfo.winRate}}%</view><view class="quick-stat-label">胜率</view></view>
     <view class="quick-stat"><view class="quick-stat-value {{userInfo.netScore >= 0 ? 'positive' : 'negative'}}">{{userInfo.netScore >= 0 ? '+' : ''}}{{userInfo.netScore}}</view><view class="quick-stat-label">净得分</view></view>
@@ -80,15 +81,6 @@
         <image class="menu-icon" src="{{icons.people}}"/>
         <text class="menu-label">好友排行</text>
         <image class="menu-arrow" src="{{icons.chevronRight}}"/>
-      </view>
-    </view>
-  </view>
-
-  <view class="menu-section" wx:if="{{userInfo}}">
-    <view class="menu-list">
-      <view class="menu-item danger" bindtap="onLogout">
-        <image class="menu-icon" src="{{icons.logout}}"/>
-        <text class="menu-label">退出登录</text>
       </view>
     </view>
   </view>

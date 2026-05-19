@@ -2,35 +2,36 @@ const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 
+const DEFAULT_AVATARS = [
+  '/static/avatars/cat.jpg',
+  '/static/avatars/dog.jpg',
+  '/static/avatars/panda.jpg',
+  '/static/avatars/rabbit.jpg'
+]
+
+function generateNickname() {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789'
+  let suffix = ''
+  for (let i = 0; i < 5; i++) {
+    suffix += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return '微信用户_' + suffix
+}
+
 exports.main = async (event, context) => {
   const { OPENID } = cloud.getWXContext()
-  const { nickname, avatarUrl } = event
 
   try {
-    // 尝试获取已有用户
     const userRes = await db.collection('users').doc(OPENID).get()
-    const user = userRes.data
-
-    // 如果传了用户信息且原数据为空，更新
-    if (nickname && !user.nickname) {
-      await db.collection('users').doc(OPENID).update({
-        data: {
-          nickname,
-          avatarUrl: avatarUrl || '',
-          updatedAt: db.serverDate()
-        }
-      })
-      user.nickname = nickname
-      user.avatarUrl = avatarUrl || ''
-    }
-
-    return { code: 0, openid: OPENID, user }
+    return { code: 0, openid: OPENID, user: userRes.data }
   } catch (err) {
-    // 用户不存在，创建新用户
+    const randomAvatar = DEFAULT_AVATARS[Math.floor(Math.random() * DEFAULT_AVATARS.length)]
+    const nickname = generateNickname()
+
     const newUser = {
       _id: OPENID,
-      nickname: nickname || '',
-      avatarUrl: avatarUrl || '',
+      nickname,
+      avatarUrl: randomAvatar,
       totalGames: 0,
       totalWins: 0,
       totalWinScore: 0,

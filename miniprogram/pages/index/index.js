@@ -18,26 +18,23 @@ Page({
   },
 
   onShow() {
-    if (app.globalData.userInfo) {
-      const user = app.globalData.userInfo
-      user.winRate = user.totalGames > 0 ? (user.totalWins / user.totalGames * 100).toFixed(1) : '0.0'
-      user.netScore = (user.totalWinScore || 0) - (user.totalLoseScore || 0)
-      this.setData({ userInfo: user, isLoggedIn: true })
+    // 每次显示页面时重新拉取最新用户数据
+    if (auth.checkLogin()) {
+      this._loadUserInfo()
     }
   },
 
   async _tryAutoLogin() {
     if (auth.checkLogin()) {
-      this._loadUserInfo()
-    } else {
-      try {
-        const res = await auth.login()
-        if (res.user) {
-          this._loadUserInfo()
-        }
-      } catch (err) {
-        console.error('静默登录失败:', err)
-      }
+      const loaded = await this._loadUserInfo()
+      if (loaded) return
+      this._clearLoginState()
+    }
+    try {
+      await auth.login()
+      await this._loadUserInfo()
+    } catch (err) {
+      console.error('自动登录失败:', err)
     }
   },
 
@@ -50,10 +47,17 @@ Page({
         user.netScore = (user.totalWinScore || 0) - (user.totalLoseScore || 0)
         app.globalData.userInfo = user
         this.setData({ userInfo: user, isLoggedIn: true })
+        return true
       }
     } catch (err) {
       console.error('获取用户信息失败:', err)
     }
+    return false
+  },
+
+  _clearLoginState() {
+    app.globalData.openid = null
+    wx.removeStorageSync('openid')
   },
 
   onCreateRoom() {

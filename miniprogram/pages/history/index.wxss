@@ -1,6 +1,6 @@
 .history-page { padding-bottom: 32rpx; }
 .date-group { padding: 0 32rpx; margin-bottom: 32rpx; }
-.date-label { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); color: var(--color-text-secondary); margin-bottom: 16rpx; }
+.date-label { font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); color: var(--color-text-secondary); margin-bottom: 16rpx; }
 .history-card {
   background: var(--color-surface);
   border-radius: var(--radius-md);
@@ -8,12 +8,12 @@
   margin-bottom: 16rpx;
 }
 .history-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24rpx; }
-.history-title { font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); }
-.history-meta { font-size: var(--font-size-xs); color: var(--color-text-tertiary); margin-top: 4rpx; }
+.history-title { font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); }
+.history-meta { font-size: var(--font-size-md); color: var(--color-text-tertiary); margin-top: 4rpx; }
 .history-badge {
   padding: 4rpx 16rpx;
   border-radius: 8rpx;
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-medium);
 }
 .badge-win { background: #e8f8ed; color: var(--color-success); }
@@ -28,10 +28,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--font-size-xs);
+  font-size: var(--font-size-md);
   font-weight: var(--font-weight-medium);
 }
-.player-score { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); }
+.player-score { font-size: var(--font-size-md); font-weight: var(--font-weight-semibold); }
 .player-score.positive { color: var(--color-success); }
 .player-score.negative { color: var(--color-danger); }
-.loading-tip, .empty-tip { text-align: center; padding: 40rpx; color: var(--color-text-tertiary); font-size: var(--font-size-sm); }
+.loading-tip, .empty-tip { text-align: center; padding: 40rpx; color: var(--color-text-tertiary); font-size: var(--font-size-md); }

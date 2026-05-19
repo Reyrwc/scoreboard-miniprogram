@@ -6,6 +6,7 @@ const app = getApp()
 Page({
   data: {
     userInfo: null,
+    isLoggedIn: false,
     tempAvatarUrl: '',
     editNickname: '',
     showNicknameEdit: false,
@@ -13,46 +14,85 @@ Page({
       document: icons.document,
       barChart: icons.barChart,
       people: icons.people,
-      logout: icons.logout,
       chevronRight: icons.chevronRight,
       edit: icons.edit
     }
   },
 
   onShow() {
-    const user = app.globalData.userInfo
-    if (user) {
-      user.winRate = user.totalGames > 0 ? (user.totalWins / user.totalGames * 100).toFixed(1) : '0.0'
-      user.netScore = (user.totalWinScore || 0) - (user.totalLoseScore || 0)
+    if (auth.checkLogin()) {
+      this._fetchUserInfo()
     }
+  },
+
+  async _fetchUserInfo() {
+    try {
+      const res = await api.getUserInfo()
+      if (res.user) {
+        app.globalData.userInfo = res.user
+        this._setUserInfo(res.user)
+      } else {
+        this._clearLoginState()
+      }
+    } catch (err) {
+      console.error('获取用户信息失败:', err)
+      this._clearLoginState()
+    }
+  },
+
+  _setUserInfo(user) {
+    user.winRate = user.totalGames > 0 ? (user.totalWins / user.totalGames * 100).toFixed(1) : '0.0'
+    user.netScore = (user.totalWinScore || 0) - (user.totalLoseScore || 0)
     this.setData({
       userInfo: user,
-      editNickname: user ? (user.nickname || '') : ''
+      isLoggedIn: true,
+      editNickname: user.nickname || ''
     })
   },
 
+  _clearLoginState() {
+    app.globalData.userInfo = null
+    app.globalData.openid = null
+    wx.removeStorageSync('openid')
+    this.setData({ userInfo: null, isLoggedIn: false })
+  },
+
   onLogin() {
-    auth.login().then((res) => {
-      if (res.user) {
-        const user = res.user
-        user.winRate = user.totalGames > 0 ? (user.totalWins / user.totalGames * 100).toFixed(1) : '0.0'
-        user.netScore = (user.totalWinScore || 0) - (user.totalLoseScore || 0)
-        app.globalData.userInfo = user
-        this.setData({
-          userInfo: user,
-          editNickname: user.nickname || ''
+    wx.showLoading({ title: '登录中...' })
+    wx.login({
+      success: (loginRes) => {
+        if (!loginRes.code) {
+          wx.hideLoading()
+          wx.showToast({ title: 'wx.login 获取 code 失败', icon: 'none' })
+          return
+        }
+        api.login({ code: loginRes.code }).then(res => {
+          wx.hideLoading()
+          if (res.openid) {
+            app.globalData.openid = res.openid
+            wx.setStorageSync('openid', res.openid)
+          }
+          if (res.user) {
+            app.globalData.userInfo = res.user
+            this._setUserInfo(res.user)
+          }
+        }).catch(err => {
+          wx.hideLoading()
+          console.error('云函数 login 调用失败:', err)
+          wx.showToast({ title: '登录失败: ' + (err.message || '云函数调用失败'), icon: 'none' })
         })
+      },
+      fail: (err) => {
+        wx.hideLoading()
+        console.error('wx.login 失败:', err)
+        wx.showToast({ title: 'wx.login 失败', icon: 'none' })
       }
-    }).catch(err => {
-      console.error('登录失败:', err)
-      wx.showToast({ title: '登录失败', icon: 'none' })
     })
   },
 
   onChooseAvatar(e) {
     const avatarUrl = e.detail.avatarUrl
     this.setData({ tempAvatarUrl: avatarUrl })
-    // 如果已有昵称，直接保存头像
     if (this.data.userInfo && this.data.userInfo.nickname) {
       this._saveAvatar(avatarUrl)
     }
@@ -96,6 +136,14 @@ Page({
     this.setData({ showNicknameEdit: false })
   },
 
+  onTapModalOverlay() {
+    this.setData({ showNicknameEdit: false })
+  },
+
+  onTapModalContent() {
+    // 阻止事件冒泡到 overlay，防止点击内容区域时关闭弹窗
+  },
+
   onNicknameInput(e) {
     this.setData({ editNickname: e.detail.value })
   },
@@ -108,10 +156,7 @@ Page({
     }
     try {
       wx.showLoading({ title: '保存中...' })
-      const res = await api.updateUserInfo({
-        nickname,
-        avatarUrl: this.data.userInfo.avatarUrl || ''
-      })
+      const res = await api.updateUserInfo({ nickname })
       wx.hideLoading()
       if (res.code === 0) {
         this.data.userInfo.nickname = nickname
@@ -121,11 +166,13 @@ Page({
           showNicknameEdit: false
         })
         wx.showToast({ title: '昵称已更新', icon: 'success' })
+      } else {
+        wx.showToast({ title: res.message || '保存失败', icon: 'none' })
       }
     } catch (err) {
       wx.hideLoading()
       console.error('保存昵称失败:', err)
-      wx.showToast({ title: '保存失败', icon: 'none' })
+      wx.showToast({ title: err.message || '保存失败', icon: 'none' })
     }
   },
 
@@ -171,20 +218,5 @@ Page({
 
   goHistory() { wx.navigateTo({ url: '/pages/history/index' }) },
   goStats() { wx.navigateTo({ url: '/pages/stats/index' }) },
-  goFriends() { wx.navigateTo({ url: '/pages/friends/index' }) },
-
-  onLogout() {
-    wx.showModal({
-      title: '确认退出',
-      content: '确定退出登录？',
-      success: (res) => {
-        if (res.confirm) {
-          app.globalData.userInfo = null
-          app.globalData.openid = null
-          wx.removeStorageSync('openid')
-          this.setData({ userInfo: null, tempAvatarUrl: '', editNickname: '' })
-        }
-      }
-    })
-  }
+  goFriends() { wx.navigateTo({ url: '/pages/friends/index' }) }
 })
