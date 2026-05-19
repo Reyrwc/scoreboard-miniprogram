@@ -132,6 +132,14 @@ const updateUserInfo = (data) => {
   return callFunction('updateUserInfo', data)
 }
 
+/**
+ * 添加测试玩家（调试用）
+ * @param {object} data { roomId }
+ */
+const addTestPlayer = (data) => {
+  return callFunction('addTestPlayer', data)
+}
+
 module.exports = {
   callFunction,
   login,
@@ -147,4 +155,5 @@ module.exports = {
   getStats,
   getFriendsRank,
   updateUserInfo,
+  addTestPlayer,
 }

@@ -7,6 +7,7 @@ Page({
   data: {
     userInfo: null,
     isLoggedIn: false,
+    activeRoom: null,
     icons: {
       circlePlusWhite: icons.circlePlusWhite,
       qrScan: icons.qrScan
@@ -46,7 +47,11 @@ Page({
         user.winRate = user.totalGames > 0 ? (user.totalWins / user.totalGames * 100).toFixed(1) : '0.0'
         user.netScore = (user.totalWinScore || 0) - (user.totalLoseScore || 0)
         app.globalData.userInfo = user
-        this.setData({ userInfo: user, isLoggedIn: true })
+        this.setData({
+          userInfo: user,
+          isLoggedIn: true,
+          activeRoom: res.activeRoom || null
+        })
         return true
       }
     } catch (err) {
@@ -58,6 +63,12 @@ Page({
   _clearLoginState() {
     app.globalData.openid = null
     wx.removeStorageSync('openid')
+  },
+
+  onEnterRoom() {
+    if (this.data.activeRoom) {
+      wx.navigateTo({ url: `/pages/room/index?roomId=${this.data.activeRoom._id}` })
+    }
   },
 
   onCreateRoom() {

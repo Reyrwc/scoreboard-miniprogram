@@ -1,5 +1,6 @@
 <view class="player-card" bindtap="onTap">
-  <view class="card-avatar">{{player.nickname[0] || '?'}}</view>
+  <image class="card-avatar-img" wx:if="{{player.avatarUrl}}" src="{{player.avatarUrl}}" mode="aspectFill"/>
+  <view class="card-avatar" wx:else>{{player.nickname[0] || '?'}}</view>
   <view class="card-name">{{player.nickname || '玩家'}}</view>
   <view class="card-score {{player.score > 0 ? 'score-pos' : player.score < 0 ? 'score-neg' : 'score-zero'}}">
     {{player.score > 0 ? '+' : ''}}{{player.score}}

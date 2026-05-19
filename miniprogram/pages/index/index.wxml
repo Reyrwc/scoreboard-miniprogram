@@ -35,4 +35,12 @@
       扫码进房
     </button>
   </view>
+
+  <view class="active-room-card" wx:if="{{activeRoom}}" bindtap="onEnterRoom">
+    <view class="active-room-info">
+      <view class="active-room-name">{{activeRoom.name}}</view>
+      <view class="active-room-meta">{{activeRoom.playerCount}}人 · 进行中</view>
+    </view>
+    <view class="active-room-arrow">></view>
+  </view>
 </view>

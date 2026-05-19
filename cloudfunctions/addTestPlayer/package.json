@@ -1,0 +1,9 @@
+{
+  "name": "addTestPlayer",
+  "version": "1.0.0",
+  "description": "添加测试玩家",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

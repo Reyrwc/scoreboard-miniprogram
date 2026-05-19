@@ -1,4 +1,5 @@
 const api = require('../../utils/api')
+const icons = require('../../utils/icons')
 const app = getApp()
 
 Page({
@@ -12,7 +13,11 @@ Page({
     isActive: false,
     showScoreModal: false,
     targetPlayer: null,
-    cooldown: 0,
+    showMenu: false,
+    icons: {
+      people: icons.people,
+      logout: icons.logout
+    }
   },
 
   onLoad(options) {
@@ -26,14 +31,12 @@ Page({
   onUnload() {
     if (this.roomWatcher) this.roomWatcher.close()
     if (this.scoreWatcher) this.scoreWatcher.close()
-    if (this.cooldownTimer) clearInterval(this.cooldownTimer)
   },
 
   async joinRoom(roomId) {
     try {
       wx.showLoading({ title: '加入中...' })
       await api.joinRoom({ roomId })
-      // api.callFunction throws on non-zero codes, so success here means join succeeded
       this.setData({ roomId })
       this.loadRoom()
     } catch (err) {
@@ -105,7 +108,25 @@ Page({
     }
   },
 
-  onDissolve() {
+  onToggleMenu() {
+    this.setData({ showMenu: !this.data.showMenu })
+  },
+
+  onCloseMenu() {
+    this.setData({ showMenu: false })
+  },
+
+  onMenuTap() {
+    // 阻止事件冒泡
+  },
+
+  onMenuInvite() {
+    this.setData({ showMenu: false })
+    wx.showToast({ title: '请点击右上角分享邀请好友', icon: 'none' })
+  },
+
+  onMenuDissolve() {
+    this.setData({ showMenu: false })
     wx.showModal({
       title: '确认解散',
       content: '解散后将保存战绩，确定解散房间？',
@@ -126,21 +147,21 @@ Page({
     })
   },
 
-  onLeave() {
-    wx.showModal({
-      title: '确认退出',
-      content: '退出后分数保留，确定退出房间？',
-      success: async (res) => {
-        if (res.confirm) {
-          try {
-            await api.leaveRoom({ roomId: this.data.roomId })
-            wx.navigateBack()
-          } catch (err) {
-            wx.showToast({ title: err.message || '退出失败', icon: 'none' })
-          }
-        }
-      }
-    })
+  onInvite() {
+    wx.showToast({ title: '请点击右上角分享邀请好友', icon: 'none' })
+  },
+
+  async onAddTestPlayer() {
+    try {
+      wx.showLoading({ title: '添加中...' })
+      await api.addTestPlayer({ roomId: this.data.roomId })
+      wx.hideLoading()
+      wx.showToast({ title: '测试玩家已添加', icon: 'success' })
+      this.loadRoom()
+    } catch (err) {
+      wx.hideLoading()
+      wx.showToast({ title: err.message || '添加失败', icon: 'none' })
+    }
   },
 
   onShareAppMessage() {
@@ -154,36 +175,21 @@ Page({
   },
 
   async onNextRound() {
-    if (this.data.cooldown > 0) return
     try {
       await api.nextRound({ roomId: this.data.roomId })
-      this.startCooldown()
       this.loadRoom()
     } catch (err) {
       wx.showToast({ title: err.message || '操作失败', icon: 'none' })
     }
   },
 
-  startCooldown() {
-    this.setData({ cooldown: 60 })
-    this.cooldownTimer = setInterval(() => {
-      if (this.data.cooldown <= 0) {
-        clearInterval(this.cooldownTimer)
-        return
-      }
-      this.setData({ cooldown: this.data.cooldown - 1 })
-    }, 1000)
-  },
-
   watchRoom() {
-    // Close existing watchers first
     if (this.roomWatcher) this.roomWatcher.close()
     if (this.scoreWatcher) this.scoreWatcher.close()
 
     const db = wx.cloud.database()
     const roomId = this.data.roomId
 
-    // 监听房间变化
     this.roomWatcher = db.collection('rooms').doc(roomId).watch({
       onChange: (snapshot) => {
         const room = snapshot.docs[0]
@@ -195,7 +201,6 @@ Page({
       }
     })
 
-    // 监听记分记录变化
     this.scoreWatcher = db.collection('scores')
       .where({ roomId })
       .orderBy('createdAt', 'desc')
