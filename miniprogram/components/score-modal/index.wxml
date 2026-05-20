@@ -11,7 +11,7 @@
     <view class="quick-btns">
       <view class="quick-btn" wx:for="{{quickScores}}" wx:key="*this" bindtap="onQuickScore" data-value="{{item}}">+{{item}}</view>
     </view>
-    <input class="note-input" placeholder="备注（选填）" value="{{noteValue}}" bindinput="onNoteInput" />
+    <input class="note-input" placeholder="备注（选填）" value="{{noteValue}}" bindinput="onNoteInput" maxlength="10"/>
     <button class="btn-submit" bindtap="onConfirm">确认</button>
   </view>
 </view>

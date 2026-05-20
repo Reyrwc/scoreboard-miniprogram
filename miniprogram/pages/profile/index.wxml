@@ -24,7 +24,7 @@
       </view>
       <view class="setup-item">
         <text class="setup-label">昵称</text>
-        <input class="setup-input" type="nickname" value="{{editNickname}}" bindinput="onNicknameInput" placeholder="请输入昵称" maxlength="20"/>
+        <input class="setup-input" type="nickname" value="{{editNickname}}" bindinput="onNicknameInput" placeholder="请输入昵称" maxlength="10"/>
       </view>
     </view>
     <button class="setup-save-btn" bindtap="onSaveProfile">保存</button>
@@ -50,7 +50,7 @@
   <view class="edit-modal" hidden="{{!showNicknameEdit}}" catchtap="onTapModalOverlay">
     <view class="edit-modal-content" catchtap="onTapModalContent">
       <view class="edit-modal-title">修改昵称</view>
-      <input class="edit-modal-input" type="nickname" value="{{editNickname}}" bindinput="onNicknameInput" placeholder="请输入昵称" maxlength="20"/>
+      <input class="edit-modal-input" type="nickname" value="{{editNickname}}" bindinput="onNicknameInput" placeholder="请输入昵称" maxlength="10"/>
       <view class="edit-modal-actions">
         <view class="edit-modal-btn cancel" bindtap="onCloseEdit">取消</view>
         <view class="edit-modal-btn confirm" bindtap="onSaveNickname">保存</view>
