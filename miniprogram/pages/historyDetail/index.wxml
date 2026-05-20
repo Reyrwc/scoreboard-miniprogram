@@ -1,7 +1,7 @@
 <view wx:if="{{history}}" class="detail-page">
   <view class="room-info">
     <view class="room-name">{{history.roomName}}</view>
-    <view class="room-date">{{history.dateLabel}} · {{history.playerCount}}人 · {{history.roundCount}}局</view>
+    <view class="room-date">{{history.dateLabel}} · {{history.timeRange}} · {{history.playerCount}}人 · {{history.roundCount}}局</view>
   </view>
 
   <view class="stats-row">

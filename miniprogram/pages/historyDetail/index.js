@@ -1,6 +1,6 @@
 const api = require('../../utils/api')
 const icons = require('../../utils/icons')
-const { formatDate } = require('../../utils/util')
+const { formatDate, formatShortTime } = require('../../utils/util')
 
 Page({
   data: {
@@ -22,9 +22,11 @@ Page({
   async loadDetail(roomId) {
     try {
       const res = await api.getHistory({ roomId })
-      const history = res.list.length > 0 ? {
-        ...res.list[0],
-        dateLabel: formatDate(res.list[0].dissolvedAt)
+      const h = res.list[0]
+      const history = h ? {
+        ...h,
+        dateLabel: formatDate(h.dissolvedAt),
+        timeRange: formatShortTime(h.createdAt) + ' - ' + formatShortTime(h.dissolvedAt)
       } : null
       this.setData({ history, loading: false })
     } catch (err) {

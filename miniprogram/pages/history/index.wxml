@@ -5,7 +5,7 @@
       <view class="history-header">
         <view>
           <view class="history-title">{{record.roomName}}</view>
-          <view class="history-meta">{{record.playerCount}}人 · {{record.roundCount}}局</view>
+          <view class="history-meta">{{record.playerCount}}人 · {{record.roundCount}}局 · {{record.timeRange}}</view>
         </view>
         <view class="history-badge {{record.myScore >= 0 ? 'badge-win' : 'badge-lose'}}">
           {{record.myScore >= 0 ? '胜' : '负'}}

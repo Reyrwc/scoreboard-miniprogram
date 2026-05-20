@@ -38,6 +38,19 @@ const formatDate = (date) => {
 }
 
 /**
+ * 格式化时间为 HH:mm
+ * @param {Date} date
+ * @returns {string}
+ */
+const formatShortTime = (date) => {
+  if (!date) return ''
+  if (typeof date === 'string' || typeof date === 'number') {
+    date = new Date(date)
+  }
+  return padZero(date.getHours()) + ':' + padZero(date.getMinutes())
+}
+
+/**
  * 数字补零
  * @param {number} n
  * @returns {string}
@@ -49,4 +62,5 @@ const padZero = (n) => {
 module.exports = {
   formatTime,
   formatDate,
+  formatShortTime,
 }

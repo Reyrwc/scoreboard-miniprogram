@@ -1,5 +1,5 @@
 const api = require('../../utils/api')
-const { formatDate } = require('../../utils/util')
+const { formatDate, formatShortTime } = require('../../utils/util')
 const app = getApp()
 
 Page({
@@ -38,6 +38,7 @@ Page({
       const list = res.list.map(item => ({
         ...item,
         dateLabel: formatDate(item.dissolvedAt),
+        timeRange: formatShortTime(item.createdAt) + ' - ' + formatShortTime(item.dissolvedAt),
         myScore: item.players.find(p => p.openid === app.globalData.openid)?.finalScore || 0
       }))
       const allList = [...this.data.list, ...list]
