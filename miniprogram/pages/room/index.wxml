@@ -57,9 +57,9 @@
       <view class="invite-room-name">{{room.name}}</view>
       <image class="invite-qrcode" wx:if="{{qrcodeUrl}}" src="{{qrcodeUrl}}" mode="aspectFit"/>
       <view class="invite-qrcode-fallback" wx:else>
-        <view class="invite-room-id-label">房间号</view>
-        <view class="invite-room-id">{{roomId}}</view>
-        <view class="invite-room-id-hint">分享房间号给好友即可加入</view>
+        <view class="invite-room-id-label">房间名</view>
+        <view class="invite-room-id">{{room.name}}</view>
+        <view class="invite-room-id-hint">转发给好友即可加入</view>
       </view>
       <button class="btn-share" open-type="share">
         <image class="share-icon" src="{{icons.shareWhite}}"/>
