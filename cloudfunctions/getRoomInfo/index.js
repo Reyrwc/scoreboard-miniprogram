@@ -24,11 +24,10 @@ exports.main = async (event, context) => {
       }
     }
 
-    // 获取当前局记分记录
+    // 获取所有记分记录
     const scoresRes = await db.collection('scores').where({
-      roomId,
-      roundNum: room.currentRound
-    }).orderBy('createdAt', 'desc').get()
+      roomId
+    }).orderBy('createdAt', 'desc').limit(100).get()
 
     // 计算排名
     const rankings = room.players.map(p => {

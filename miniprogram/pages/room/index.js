@@ -78,7 +78,7 @@ Page({
         isActive: res.room.status === 'active'
       })
       wx.setNavigationBarTitle({ title: res.room.name })
-      this.watchRoom(res.room.currentRound)
+      this.watchRoom()
       this._startExpireTimer()
     } catch (err) {
       this.setData({ isLoading: false })
@@ -253,7 +253,7 @@ Page({
     }, remain)
   },
 
-  watchRoom(currentRound) {
+  watchRoom() {
     if (this.roomWatcher) this.roomWatcher.close()
     if (this.scoreWatcher) this.scoreWatcher.close()
 
@@ -270,10 +270,6 @@ Page({
           wx.showToast({ title: '房间已解散', icon: 'none' })
           setTimeout(() => wx.navigateBack(), 1500)
         }
-        // 局数变化时重启 score watcher
-        if (room.currentRound !== currentRound) {
-          this.watchRoom(room.currentRound)
-        }
       },
       onError: (err) => {
         console.error('房间监听失败:', err)
@@ -281,9 +277,9 @@ Page({
     })
 
     this.scoreWatcher = db.collection('scores')
-      .where({ roomId, roundNum: currentRound })
+      .where({ roomId })
       .orderBy('createdAt', 'desc')
-      .limit(50)
+      .limit(100)
       .watch({
         onChange: (snapshot) => {
           this.setData({ scores: snapshot.docs })
