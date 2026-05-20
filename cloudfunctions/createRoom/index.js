@@ -20,9 +20,21 @@ exports.main = async (event, context) => {
     const userRes = await db.collection('users').doc(OPENID).get()
     const user = userRes.data
 
+    // 随机房间名
+    const roomNames = [
+      '快乐老家','今晚不睡','等你来战','一起开黑','四缺一呀',
+      '赢了请客','半夜开团','摸鱼基地','谁最强呀','别跑没完',
+      '赢麻了呀','今晚通宵','刺激战场','最后一局','来把大的',
+      '今天手气','战斗开始','上号上号','来了就赢','不见不散'
+    ]
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+    let suffix = ''
+    for (let i = 0; i < 4; i++) suffix += chars[Math.floor(Math.random() * chars.length)]
+    const roomName = roomNames[Math.floor(Math.random() * roomNames.length)] + suffix
+
     // 创建房间
     const room = {
-      name: `${user.nickname || '玩家'}的房间`,
+      name: roomName,
       ownerId: OPENID,
       players: [{
         openid: OPENID,
