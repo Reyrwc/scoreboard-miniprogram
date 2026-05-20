@@ -3,6 +3,14 @@
   border-radius: var(--radius-md);
   overflow: hidden;
 }
+.round-header {
+  padding: 16rpx 32rpx;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  background: var(--color-background);
+  border-bottom: 1rpx solid var(--color-divider);
+}
 .record-item {
   display: flex;
   align-items: center;
@@ -11,10 +19,6 @@
 }
 .record-item:last-child {
   border-bottom: none;
-}
-.record-text {
-  flex: 1;
-  font-size: var(--font-size-base);
 }
 .record-avatar-img {
   width: 48rpx;
@@ -36,18 +40,28 @@
   margin-right: 16rpx;
   flex-shrink: 0;
 }
+.record-body {
+  flex: 1;
+}
+.record-text {
+  font-size: var(--font-size-base);
+}
 .record-note {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
-  margin-left: 16rpx;
 }
 .record-meta {
   text-align: right;
+  margin-left: 16rpx;
 }
 .record-score {
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   color: var(--color-success);
+}
+.record-time {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
 }
 .empty-tip {
   text-align: center;

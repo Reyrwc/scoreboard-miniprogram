@@ -20,15 +20,13 @@ exports.main = async (event, context) => {
       }
     }
 
-    // 检查：当前局至少有1条记分记录（第0局跳过检查）
-    if (currentRound > 0) {
-      const scores = await db.collection('scores')
-        .where({ roomId, roundNum: currentRound })
-        .limit(1)
-        .get()
-      if (scores.data.length === 0) {
-        return { code: -1, message: '当前局还没有记分记录' }
-      }
+    // 检查：房间至少有1条记分记录才能进入下一局
+    const scores = await db.collection('scores')
+      .where({ roomId })
+      .limit(1)
+      .get()
+    if (scores.data.length === 0) {
+      return { code: -1, message: '请先记分再开始下一局' }
     }
 
     // 更新局数 + 记录时间

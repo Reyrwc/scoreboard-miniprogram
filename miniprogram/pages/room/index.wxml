@@ -6,7 +6,7 @@
   <view class="content">
     <view class="section-header">
       <text class="section-label">积分排名（{{room.players.length}}人）</text>
-      <text class="round-badge" wx:if="{{room.currentRound > 0}}">第{{room.currentRound}}局</text>
+      <text class="round-badge" wx:if="{{room.currentRound > 0}}">第{{room.currentRound + 1}}局</text>
     </view>
     <view class="player-grid">
       <player-card wx:for="{{rankings}}" wx:key="openid" player="{{item}}" rank="{{index + 1}}" bind:tap="onPlayerTap" />
@@ -23,7 +23,7 @@
     <view class="section-header">
       <text class="section-label">记分记录</text>
     </view>
-    <score-record scores="{{scores}}" roundNum="{{room.currentRound}}" />
+    <score-record scores="{{scores}}" currentRound="{{room.currentRound}}" />
   </view>
 
   <view class="bottom-bar" wx:if="{{isActive}}">
