@@ -470,20 +470,36 @@ exports.main = async (event, context) => {
 ```
 
 #### getFriendsRank - 获取好友排行
+
+基于房间历史统计一起玩过的玩家排行。
+
+**好友判定逻辑**：查询 `history` 集合中当前用户参与过的房间，提取同房玩家 openid 列表（排除自己）。
+
 ```javascript
 // 入参
 {
-  sortBy: "winRate",  // winRate | totalGames | netScore
-  page: 1,
-  pageSize: 20
+  sortBy: "winRate"  // winRate | totalGames | netScore
 }
 
 // 返回
 {
-  success: true,
-  list: [ ... ]
+  code: 0,
+  list: [
+    {
+      _id: "openid",
+      nickname: "张三",
+      avatarUrl: "...",
+      totalGames: 10,
+      totalWins: 6,
+      winRate: 60.0,
+      netScore: 120
+    }
+  ],
+  total: 5
 }
 ```
+
+**降级策略**：若用户无历史记录（没有好友），则返回全平台用户排行。
 
 ---
 

@@ -18,7 +18,7 @@
     </view>
   </view>
 
-  <view class="section-title">全部好友</view>
+  <view class="section-title">好友排行</view>
   <view class="rank-list" wx:if="{{!loading}}">
     <view class="rank-item" wx:for="{{list}}" wx:key="_id">
       <view class="rank-position">{{index + 1}}</view>
@@ -37,5 +37,5 @@
     <text class="retry-link" bindtap="onRetry">点击重试</text>
   </view>
   <view class="loading" wx:elif="{{loading}}">加载中...</view>
-  <view class="empty-tip" wx:elif="{{list.length === 0}}">暂无排行数据</view>
+  <view class="empty-tip" wx:elif="{{list.length === 0}}">暂无好友，去创建房间邀请好友吧</view>
 </view>
