@@ -69,10 +69,30 @@ Page({
   async loadRoom() {
     try {
       const res = await api.getRoomInfo({ roomId: this.data.roomId })
+      // 直接从数据库查询分数，不依赖云函数返回
+      const db = wx.cloud.database()
+      const scoresRes = await db.collection('scores')
+        .where({ roomId: this.data.roomId })
+        .orderBy('createdAt', 'desc')
+        .limit(100)
+        .get()
+      const scores = scoresRes.data
+
+      // 本地计算排名
+      const rankings = res.room.players.map(p => {
+        const totalScore = scores
+          .filter(s => s.toOpenid === p.openid)
+          .reduce((sum, s) => sum + s.amount, 0)
+          - scores
+          .filter(s => s.fromOpenid === p.openid)
+          .reduce((sum, s) => sum + s.amount, 0)
+        return { ...p, score: totalScore }
+      }).sort((a, b) => b.score - a.score)
+
       this.setData({
         room: res.room,
-        rankings: res.rankings,
-        scores: res.scores,
+        rankings,
+        scores,
         isOwner: res.room.ownerId === app.globalData.openid,
         isLoading: false,
         isActive: res.room.status === 'active'
