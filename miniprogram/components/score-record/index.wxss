@@ -16,6 +16,26 @@
   flex: 1;
   font-size: var(--font-size-base);
 }
+.record-avatar-img {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+}
+.record-avatar {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+}
 .record-note {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);

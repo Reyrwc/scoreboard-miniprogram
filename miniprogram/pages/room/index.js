@@ -33,7 +33,6 @@ Page({
 
   onUnload() {
     if (this.roomWatcher) this.roomWatcher.close()
-    if (this.scoreWatcher) this.scoreWatcher.close()
     if (this._expireTimer) clearTimeout(this._expireTimer)
   },
 
@@ -69,25 +68,17 @@ Page({
   async loadRoom() {
     try {
       const res = await api.getRoomInfo({ roomId: this.data.roomId })
-      // 直接从数据库查询分数，不依赖云函数返回
-      const db = wx.cloud.database()
-      const scoresRes = await db.collection('scores')
-        .where({ roomId: this.data.roomId })
-        .orderBy('createdAt', 'desc')
-        .limit(100)
-        .get()
-      const scores = scoresRes.data
-
-      // 本地计算排名
-      const rankings = res.room.players.map(p => {
-        const totalScore = scores
-          .filter(s => s.toOpenid === p.openid)
-          .reduce((sum, s) => sum + s.amount, 0)
-          - scores
-          .filter(s => s.fromOpenid === p.openid)
-          .reduce((sum, s) => sum + s.amount, 0)
-        return { ...p, score: totalScore }
-      }).sort((a, b) => b.score - a.score)
+      // 云函数有管理员权限，能读到所有分数；客户端查询受安全规则限制会返回空
+      const scores = res.scores || []
+      const rankings = res.rankings || []
+      // 给分数记录附带头像
+      const players = res.room.players || []
+      const avatarMap = {}
+      players.forEach(p => { avatarMap[p.openid] = p.avatarUrl || '' })
+      scores.forEach(s => {
+        s.fromAvatarUrl = avatarMap[s.fromOpenid] || ''
+        s.toAvatarUrl = avatarMap[s.toOpenid] || ''
+      })
 
       this.setData({
         room: res.room,
@@ -126,13 +117,16 @@ Page({
       wx.showLoading({ title: '提交中...' })
       await api.addScore({ roomId, toOpenid: targetPlayer.openid, amount: score, note })
       // 直接更新本地数据，避免 loadRoom 覆盖
+      const fromPlayer = room.players.find(p => p.openid === app.globalData.openid)
       const newScore = {
         roomId,
         roundNum: room.currentRound,
         fromOpenid: app.globalData.openid,
-        fromNickname: room.players.find(p => p.openid === app.globalData.openid)?.nickname || '玩家',
+        fromNickname: fromPlayer?.nickname || '玩家',
+        fromAvatarUrl: fromPlayer?.avatarUrl || '',
         toOpenid: targetPlayer.openid,
         toNickname: targetPlayer.nickname || '玩家',
+        toAvatarUrl: targetPlayer.avatarUrl || '',
         amount: parseFloat(score),
         note: note || '',
         createdAt: new Date()
@@ -275,7 +269,6 @@ Page({
 
   watchRoom() {
     if (this.roomWatcher) this.roomWatcher.close()
-    if (this.scoreWatcher) this.scoreWatcher.close()
 
     const db = wx.cloud.database()
     const roomId = this.data.roomId
@@ -296,19 +289,9 @@ Page({
       }
     })
 
-    this.scoreWatcher = db.collection('scores')
-      .where({ roomId })
-      .orderBy('createdAt', 'desc')
-      .limit(100)
-      .watch({
-        onChange: (snapshot) => {
-          this.setData({ scores: snapshot.docs })
-          this.calcRankings()
-        },
-        onError: (err) => {
-          console.error('记分监听失败:', err)
-        }
-      })
+    // 不监听 scores 集合——客户端受安全规则限制读不到其他用户创建的记录，
+    // watch 会返回空数组覆盖掉从云函数拿到的真实数据。
+    // 分数变更通过 onScoreConfirm 本地更新 + loadRoom 从云函数获取。
   },
 
   calcRankings() {

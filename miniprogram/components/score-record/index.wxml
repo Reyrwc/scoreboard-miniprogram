@@ -1,5 +1,7 @@
 <view class="record-card" wx:if="{{scores.length > 0}}">
   <view class="record-item" wx:for="{{scores}}" wx:key="_id">
+    <image class="record-avatar-img" wx:if="{{item.fromAvatarUrl}}" src="{{item.fromAvatarUrl}}" mode="aspectFill"/>
+    <view class="record-avatar" wx:else>{{item.fromNickname ? item.fromNickname[0] : '?'}}</view>
     <view class="record-text">{{item.fromNickname}} → {{item.toNickname}}</view>
     <view class="record-note" wx:if="{{item.note}}">{{item.note}}</view>
     <view class="record-meta">
