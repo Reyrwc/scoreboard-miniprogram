@@ -151,6 +151,11 @@ Page({
           return p
         })
         const room = { ...this.data.room, players }
+        // 房主改昵称时同步更新房间名
+        if (this.data.isOwner) {
+          room.name = nickname + '的房间'
+          wx.setNavigationBarTitle({ title: room.name })
+        }
         const rankings = this.data.rankings.map(r => {
           if (r.openid === myOpenid) return { ...r, nickname }
           return r
