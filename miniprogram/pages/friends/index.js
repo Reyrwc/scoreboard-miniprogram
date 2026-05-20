@@ -9,6 +9,10 @@ Page({
     loadError: false
   },
   onLoad() { this.loadRank() },
+  onPullDownRefresh() {
+    this.setData({ sortBy: 'winRate', list: [], topThree: [], loading: true, loadError: false })
+    this.loadRank().finally(() => wx.stopPullDownRefresh())
+  },
 
   onSort(e) {
     const sort = e.currentTarget.dataset.sort

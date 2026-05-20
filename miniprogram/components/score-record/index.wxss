@@ -46,9 +46,6 @@
 }
 .record-name {
   font-size: var(--font-size-base);
-  max-width: 120rpx;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 .record-arrow {
@@ -61,11 +58,18 @@
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
   margin-left: 8rpx;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200rpx;
 }
 .record-meta {
   margin-left: auto;
   text-align: right;
   padding-left: 16rpx;
+  flex-shrink: 0;
 }
 .record-score {
   font-size: var(--font-size-base);

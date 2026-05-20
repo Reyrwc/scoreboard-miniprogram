@@ -1,3 +1,4 @@
 {
-  "navigationBarTitleText": "个人统计"
+  "navigationBarTitleText": "个人统计",
+  "enablePullDownRefresh": true
 }

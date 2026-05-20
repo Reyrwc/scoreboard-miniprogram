@@ -1,5 +1,5 @@
 {
   "navigationBarTitleText": "记分板",
-  
-"usingComponents": {}
+  "enablePullDownRefresh": true,
+  "usingComponents": {}
 }

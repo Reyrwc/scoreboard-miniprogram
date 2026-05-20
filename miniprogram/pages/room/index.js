@@ -262,6 +262,7 @@ Page({
 
     this._expireTimer = setTimeout(() => {
       if (this.data.isActive) {
+        app.globalData._roomDissolved = true
         wx.showToast({ title: '房间已过期', icon: 'none' })
         this.loadRoom()
         setTimeout(() => wx.navigateBack(), 1500)
@@ -282,6 +283,7 @@ Page({
         this.setData({ room, isActive: room.status === 'active' })
         if (room.status !== 'active') {
           if (this._expireTimer) clearTimeout(this._expireTimer)
+          app.globalData._roomDissolved = true
           wx.showToast({ title: '房间已解散', icon: 'none' })
           setTimeout(() => wx.navigateBack(), 1500)
         }

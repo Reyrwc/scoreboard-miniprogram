@@ -3,6 +3,10 @@ const api = require('../../utils/api')
 Page({
   data: { stats: null, loading: true, loadError: false },
   onLoad() { this.loadStats() },
+  onPullDownRefresh() {
+    this.setData({ stats: null, loading: true, loadError: false })
+    this.loadStats().finally(() => wx.stopPullDownRefresh())
+  },
   async loadStats() {
     try {
       const res = await api.getStats()

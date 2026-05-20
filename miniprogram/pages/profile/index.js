@@ -25,6 +25,10 @@ Page({
     }
   },
 
+  onPullDownRefresh() {
+    this._fetchUserInfo().finally(() => wx.stopPullDownRefresh())
+  },
+
   async _fetchUserInfo() {
     try {
       const res = await api.getUserInfo()

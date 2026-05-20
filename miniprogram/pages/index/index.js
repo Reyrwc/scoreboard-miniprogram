@@ -23,6 +23,15 @@ Page({
     if (auth.checkLogin()) {
       this._loadUserInfo()
     }
+    // 房间页解散后 navigateBack 回来时，云函数可能还未完成写入，延迟重查
+    if (app.globalData._roomDissolved) {
+      app.globalData._roomDissolved = false
+      setTimeout(() => { if (auth.checkLogin()) this._loadUserInfo() }, 1500)
+    }
+  },
+
+  onPullDownRefresh() {
+    this._loadUserInfo().finally(() => wx.stopPullDownRefresh())
   },
 
   async _tryAutoLogin() {
