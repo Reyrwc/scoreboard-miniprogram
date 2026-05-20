@@ -144,13 +144,24 @@ Page({
       const res = await api.updateUserInfo({ nickname })
       wx.hideLoading()
       if (res.code === 0) {
-        // 更新本地 room.players 中自己的昵称
+        // 更新 room.players、rankings、scores 中自己的昵称
+        const myOpenid = app.globalData.openid
         const players = this.data.room.players.map(p => {
-          if (p.openid === app.globalData.openid) return { ...p, nickname }
+          if (p.openid === myOpenid) return { ...p, nickname }
           return p
         })
         const room = { ...this.data.room, players }
-        this.setData({ room, showNicknameEdit: false })
+        const rankings = this.data.rankings.map(r => {
+          if (r.openid === myOpenid) return { ...r, nickname }
+          return r
+        })
+        const scores = this.data.scores.map(s => {
+          const update = {}
+          if (s.fromOpenid === myOpenid) update.fromNickname = nickname
+          if (s.toOpenid === myOpenid) update.toNickname = nickname
+          return Object.keys(update).length ? { ...s, ...update } : s
+        })
+        this.setData({ room, rankings, scores, showNicknameEdit: false })
         wx.showToast({ title: '昵称已更新', icon: 'success' })
       } else {
         wx.showToast({ title: res.message || '保存失败', icon: 'none' })
