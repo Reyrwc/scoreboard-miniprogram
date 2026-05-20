@@ -1,18 +1,18 @@
 <view class="history-page">
-  <view class="date-group" wx:for="{{list}}" wx:key="_id">
+  <view class="date-group" wx:for="{{groups}}" wx:key="dateLabel">
     <view class="date-label">{{item.dateLabel}}</view>
-    <view class="history-card" bindtap="onDetail" data-item="{{item}}">
+    <view class="history-card" wx:for="{{item.items}}" wx:for-item="record" wx:key="_id" bindtap="onDetail" data-item="{{record}}">
       <view class="history-header">
         <view>
-          <view class="history-title">{{item.roomName}}</view>
-          <view class="history-meta">{{item.playerCount}}人 · {{item.roundCount}}局</view>
+          <view class="history-title">{{record.roomName}}</view>
+          <view class="history-meta">{{record.playerCount}}人 · {{record.roundCount}}局</view>
         </view>
-        <view class="history-badge {{item.myScore >= 0 ? 'badge-win' : 'badge-lose'}}">
-          {{item.myScore >= 0 ? '胜' : '负'}}
+        <view class="history-badge {{record.myScore >= 0 ? 'badge-win' : 'badge-lose'}}">
+          {{record.myScore >= 0 ? '胜' : '负'}}
         </view>
       </view>
       <view class="history-players">
-        <view class="player-chip" wx:for="{{item.players}}" wx:for-item="player" wx:key="openid">
+        <view class="player-chip" wx:for="{{record.players}}" wx:for-item="player" wx:key="openid">
           <image class="player-mini-avatar-img" wx:if="{{player.avatarUrl}}" src="{{player.avatarUrl}}" mode="aspectFill"/>
           <view class="player-mini-avatar" wx:else>{{player.nickname ? player.nickname[0] : '?'}}</view>
           <view class="player-score {{player.finalScore >= 0 ? 'positive' : 'negative'}}">

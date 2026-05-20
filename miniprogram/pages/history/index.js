@@ -5,6 +5,7 @@ const app = getApp()
 Page({
   data: {
     list: [],
+    groups: [],
     page: 1,
     hasMore: true,
     loading: false
@@ -12,8 +13,21 @@ Page({
   onLoad() { this.loadHistory() },
   onReachBottom() { if (this.data.hasMore) this.loadHistory() },
   onPullDownRefresh() {
-    this.setData({ list: [], page: 1, hasMore: true })
+    this.setData({ list: [], groups: [], page: 1, hasMore: true })
     this.loadHistory().finally(() => wx.stopPullDownRefresh())
+  },
+
+  _buildGroups(list) {
+    const groups = []
+    list.forEach(item => {
+      const last = groups[groups.length - 1]
+      if (last && last.dateLabel === item.dateLabel) {
+        last.items.push(item)
+      } else {
+        groups.push({ dateLabel: item.dateLabel, items: [item] })
+      }
+    })
+    return groups
   },
 
   async loadHistory() {
@@ -26,10 +40,12 @@ Page({
         dateLabel: formatDate(item.dissolvedAt),
         myScore: item.players.find(p => p.openid === app.globalData.openid)?.finalScore || 0
       }))
+      const allList = [...this.data.list, ...list]
       this.setData({
-        list: [...this.data.list, ...list],
+        list: allList,
+        groups: this._buildGroups(allList),
         page: this.data.page + 1,
-        hasMore: this.data.list.length + list.length < res.total
+        hasMore: allList.length < res.total
       })
     } catch (err) {
       wx.showToast({ title: '加载失败', icon: 'none' })
