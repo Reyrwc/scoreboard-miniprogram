@@ -7,7 +7,7 @@
 | 功能 | 说明 |
 |------|------|
 | 微信登录 | wx.login 获取 openid，获取头像昵称 |
-| 创建房间 | 房主昵称 + "的房间"，最多 20 人 |
+| 创建房间 | 随机名称 + 4位随机码，最多 20 人 |
 | 加入房间 | 通过分享链接/二维码加入 |
 | 实时记分 | 点击头像加分，记分人自动扣分 |
 | 下一局 | 记录局数，至少 1 条记录才能点，1分钟防重复 |
@@ -99,7 +99,7 @@
 ```javascript
 {
   _id: "room_abc123",               // 房间 ID (自动生成)
-  name: "张三的房间",               // 房间名称
+  name: "快乐老家AB12",             // 房间名称（随机名+4位码）
   ownerId: "openid_owner",          // 房主 openid
   players: [                        // 玩家列表
     {
@@ -214,7 +214,7 @@
 ```javascript
 // 入参
 {
-  nickname: "新昵称",  // 可选
+  nickname: "新昵称",  // 可选，限10字
   avatarUrl: "https://..."  // 可选
 }
 
@@ -223,6 +223,11 @@
   success: true
 }
 ```
+
+**逻辑：**
+1. 更新 `users` 集合中的用户信息
+2. 如果修改了昵称，同步更新所有活跃房间 `rooms` 中该用户的 `players` 数组里的昵称
+3. 房间内其他用户通过 room watcher 实时收到昵称变更
 
 ### 4.2 房间相关
 
@@ -240,7 +245,7 @@
 
 **逻辑：**
 1. 检查用户是否已在其他活跃房间
-2. 创建房间，房间名为 "用户昵称 + 的房间"
+2. 创建房间，房间名从20个预设名称中随机选取 + 4位随机字母数字码
 3. 房主自动加入
 
 #### joinRoom - 加入房间
@@ -360,16 +365,17 @@
 // 失败（1分钟内重复点击）：
 { success: false, message: "已有人点击，一分钟后再试" }
 
-// 失败（当前局无记分记录）：
-{ success: false, message: "当前局还没有记分记录" }
+// 失败（房间无记分记录）：
+{ success: false, message: "请先记分再开始下一局" }
 ```
 
 **逻辑：**
 1. 验证房间存在且状态为 active
-2. 验证当前局至少有 1 条记分记录
+2. 验证房间至少有 1 条记分记录（不限局数）
 3. **检查 lastNextRoundTime**：如果当前时间 - lastNextRoundTime < 60秒，返回失败
 4. 更新 currentRound + 1
 5. 更新 lastNextRoundTime 为当前时间
+6. 客户端收到成功或"一分钟"错误时均显示"已开始下一局"并刷新数据
 
 **实现代码：**
 ```javascript
@@ -392,16 +398,13 @@ exports.main = async (event, context) => {
     }
   }
   
-  // 检查：当前局至少有1条记分记录
-  if (currentRound > 0) {
-    const scores = await db.collection('scores')
-      .where({ roomId, roundNum: currentRound })
-      .limit(1)
-      .get()
-      
-    if (scores.data.length === 0) {
-      return { success: false, message: '当前局还没有记分记录' }
-    }
+  // 检查：房间至少有1条记分记录
+  const scores = await db.collection('scores')
+    .where({ roomId })
+    .limit(1)
+    .get()
+  if (scores.data.length === 0) {
+    return { success: false, message: '请先记分再开始下一局' }
   }
   
   // 更新局数 + 记录时间
@@ -739,7 +742,9 @@ Page({
 
 ### 7.4 自动解散
 - 云开发没有定时器（cron）
-- 实现方式：每次查询房间信息时检查 `lastScoreAt`，超过 30 分钟标记为 dissolved
+- 实现方式：每次查询房间信息时检查 `lastScoreAt`（无记录则用 `createdAt`），超过 2 分钟标记为 dissolved
+- 自动解散时同步写入 `history` 集合并更新用户统计
+- 客户端 `_startExpireTimer` 也基于 `lastScoreAt || createdAt` 倒计时，每次记分后重置
 - 用户尝试操作已解散房间时，提示"房间已解散"
 
 ### 7.5 云开发免费额度
@@ -757,6 +762,6 @@ Page({
 
 ---
 
-*文档版本：v1.3*  
-*创建日期：2026-05-19*  
-*更新日期：2026-05-19*
+*文档版本：v1.4*
+*创建日期：2026-05-19*
+*更新日期：2026-05-21*
