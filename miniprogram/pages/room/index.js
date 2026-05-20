@@ -78,6 +78,15 @@ Page({
       scores.forEach(s => {
         s.fromAvatarUrl = avatarMap[s.fromOpenid] || ''
         s.toAvatarUrl = avatarMap[s.toOpenid] || ''
+        // 直接计算时间，不依赖 observer
+        if (!s._time) {
+          const d = s.createdAt instanceof Date ? s.createdAt : new Date(s.createdAt)
+          if (!isNaN(d.getTime())) {
+            s._time = d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0')
+          } else {
+            s._time = ''
+          }
+        }
       })
 
       this.setData({
@@ -116,9 +125,12 @@ Page({
     try {
       wx.showLoading({ title: '提交中...' })
       await api.addScore({ roomId, toOpenid: targetPlayer.openid, amount: score, note })
-      // 直接更新本地数据，避免 loadRoom 覆盖
+      const now = new Date()
       const fromPlayer = room.players.find(p => p.openid === app.globalData.openid)
+      const h = now.getHours().toString().padStart(2, '0')
+      const m = now.getMinutes().toString().padStart(2, '0')
       const newScore = {
+        _id: 'local_' + now.getTime(),
         roomId,
         roundNum: room.currentRound,
         fromOpenid: app.globalData.openid,
@@ -129,10 +141,13 @@ Page({
         toAvatarUrl: targetPlayer.avatarUrl || '',
         amount: parseFloat(score),
         note: note || '',
-        createdAt: new Date()
+        createdAt: now,
+        _time: h + ':' + m
       }
       const scores = [newScore, ...this.data.scores]
-      this.setData({ showScoreModal: false, targetPlayer: null, scores })
+      // 更新 room.lastScoreAt 使过期计时器从本次记分开始重新倒计时
+      const updatedRoom = { ...room, lastScoreAt: now }
+      this.setData({ showScoreModal: false, targetPlayer: null, scores, room: updatedRoom })
       this.calcRankings()
       this._startExpireTimer()
     } catch (err) {
