@@ -11,8 +11,8 @@ exports.main = async (event, context) => {
 
     if (nickname !== undefined && nickname !== null) {
       const trimmed = String(nickname).trim()
-      if (trimmed.length > 20) {
-        return { code: -1, message: '昵称不能超过20个字符' }
+      if (trimmed.length > 10) {
+        return { code: -1, message: '昵称不能超过10个字符' }
       }
       updates.nickname = trimmed
     }
@@ -22,6 +22,25 @@ exports.main = async (event, context) => {
     }
 
     await db.collection('users').doc(OPENID).update({ data: updates })
+
+    // 昵称变更时，同步更新所有活跃房间中该用户的昵称
+    if (updates.nickname) {
+      try {
+        const roomsRes = await db.collection('rooms').where({
+          status: 'active',
+          'players.openid': OPENID
+        }).get()
+        for (const room of roomsRes.data) {
+          const players = room.players.map(p =>
+            p.openid === OPENID ? { ...p, nickname: updates.nickname } : p
+          )
+          await db.collection('rooms').doc(room._id).update({ data: { players } })
+        }
+      } catch (e) {
+        console.error('同步房间昵称失败:', e)
+      }
+    }
+
     return { code: 0 }
   } catch (err) {
     console.error('updateUserInfo error:', err)

@@ -359,7 +359,22 @@ Page({
       onChange: (snapshot) => {
         const room = snapshot.docs[0]
         if (!room) return
-        this.setData({ room, isActive: room.status === 'active' })
+        // 构建 openid→昵称/头像 映射，同步更新 scores
+        const nameMap = {}
+        const avatarMap = {}
+        room.players.forEach(p => {
+          nameMap[p.openid] = p.nickname
+          avatarMap[p.openid] = p.avatarUrl || ''
+        })
+        const scores = this.data.scores.map(s => ({
+          ...s,
+          fromNickname: nameMap[s.fromOpenid] || s.fromNickname,
+          fromAvatarUrl: avatarMap[s.fromOpenid] || s.fromAvatarUrl,
+          toNickname: nameMap[s.toOpenid] || s.toNickname,
+          toAvatarUrl: avatarMap[s.toOpenid] || s.toAvatarUrl
+        }))
+        this.setData({ room, scores, isActive: room.status === 'active' })
+        this.calcRankings()
         if (room.status !== 'active') {
           if (this._expireTimer) clearTimeout(this._expireTimer)
           app.globalData._roomDissolved = true
