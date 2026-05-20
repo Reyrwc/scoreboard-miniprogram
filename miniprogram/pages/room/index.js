@@ -106,7 +106,7 @@ Page({
       wx.showLoading({ title: '提交中...' })
       await api.addScore({ roomId, toOpenid: targetPlayer.openid, amount: score, note })
       this.setData({ showScoreModal: false, targetPlayer: null })
-      this.loadRoom()
+      // watcher 会实时更新分数和排名，无需手动 loadRoom
     } catch (err) {
       wx.showToast({ title: err.message || '记分失败', icon: 'none' })
     } finally {
