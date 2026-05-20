@@ -15,6 +15,8 @@ Page({
     targetPlayer: null,
     showMenu: false,
     showInviteModal: false,
+    showNicknameEdit: false,
+    editNickname: '',
     qrcodeUrl: '',
     icons: {
       people: icons.people,
@@ -109,10 +111,54 @@ Page({
   onPlayerTap(e) {
     const player = e.detail.player
     if (player.openid === app.globalData.openid) {
-      wx.showToast({ title: '不能给自己记分', icon: 'none' })
+      this.setData({ showNicknameEdit: true, editNickname: player.nickname || '' })
       return
     }
     this.setData({ showScoreModal: true, targetPlayer: player })
+  },
+
+  onNicknameInput(e) {
+    this.setData({ editNickname: e.detail.value })
+  },
+
+  onCloseNicknameEdit() {
+    this.setData({ showNicknameEdit: false })
+  },
+
+  onNicknameModalOverlay() {
+    this.setData({ showNicknameEdit: false })
+  },
+
+  onNicknameModalContent() {
+    // 阻止冒泡
+  },
+
+  async onSaveNickname() {
+    const nickname = this.data.editNickname.trim()
+    if (!nickname) {
+      wx.showToast({ title: '请输入昵称', icon: 'none' })
+      return
+    }
+    try {
+      wx.showLoading({ title: '保存中...' })
+      const res = await api.updateUserInfo({ nickname })
+      wx.hideLoading()
+      if (res.code === 0) {
+        // 更新本地 room.players 中自己的昵称
+        const players = this.data.room.players.map(p => {
+          if (p.openid === app.globalData.openid) return { ...p, nickname }
+          return p
+        })
+        const room = { ...this.data.room, players }
+        this.setData({ room, showNicknameEdit: false })
+        wx.showToast({ title: '昵称已更新', icon: 'success' })
+      } else {
+        wx.showToast({ title: res.message || '保存失败', icon: 'none' })
+      }
+    } catch (err) {
+      wx.hideLoading()
+      wx.showToast({ title: err.message || '保存失败', icon: 'none' })
+    }
   },
 
   onScoreClose() {
@@ -251,9 +297,16 @@ Page({
   async onNextRound() {
     try {
       await api.nextRound({ roomId: this.data.roomId })
+      wx.showToast({ title: '已开始下一局', icon: 'success' })
       this.loadRoom()
     } catch (err) {
-      wx.showToast({ title: err.message || '操作失败', icon: 'none' })
+      // 别人已经点过了，也算成功开始
+      if (err.message && err.message.includes('一分钟')) {
+        wx.showToast({ title: '已开始下一局', icon: 'success' })
+        this.loadRoom()
+      } else {
+        wx.showToast({ title: err.message || '操作失败', icon: 'none' })
+      }
     }
   },
 

@@ -69,4 +69,15 @@
   </view>
 
   <score-modal visible="{{showScoreModal}}" targetPlayer="{{targetPlayer}}" bind:close="onScoreClose" bind:confirm="onScoreConfirm" />
+
+  <view class="nickname-modal" wx:if="{{showNicknameEdit}}" bindtap="onNicknameModalOverlay">
+    <view class="nickname-modal-content" catchtap="onNicknameModalContent">
+      <view class="nickname-modal-title">修改昵称</view>
+      <input class="nickname-modal-input" type="nickname" value="{{editNickname}}" bindinput="onNicknameInput" placeholder="请输入昵称" maxlength="10"/>
+      <view class="nickname-modal-actions">
+        <view class="nickname-modal-btn cancel" bindtap="onCloseNicknameEdit">取消</view>
+        <view class="nickname-modal-btn confirm" bindtap="onSaveNickname">保存</view>
+      </view>
+    </view>
+  </view>
 </view>

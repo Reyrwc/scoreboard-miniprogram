@@ -253,3 +253,52 @@
   width: 40rpx;
   height: 40rpx;
 }
+.nickname-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+}
+.nickname-modal-content {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 48rpx 40rpx;
+  width: 80%;
+  max-width: 600rpx;
+}
+.nickname-modal-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  margin-bottom: 32rpx;
+}
+.nickname-modal-input {
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  padding: 24rpx;
+  font-size: var(--font-size-base);
+  margin-bottom: 32rpx;
+}
+.nickname-modal-actions {
+  display: flex;
+  gap: 20rpx;
+}
+.nickname-modal-btn {
+  flex: 1;
+  text-align: center;
+  padding: 24rpx;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+}
+.nickname-modal-btn.cancel {
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+}
+.nickname-modal-btn.confirm {
+  background: var(--color-primary);
+  color: #fff;
+}
