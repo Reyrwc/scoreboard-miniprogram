@@ -20,57 +20,52 @@
 .record-item:last-child {
   border-bottom: none;
 }
-.record-avatars {
+.record-player {
   display: flex;
   align-items: center;
-  margin-right: 16rpx;
+  gap: 8rpx;
   flex-shrink: 0;
-  position: relative;
-  width: 72rpx;
-  height: 48rpx;
 }
 .record-avatar-img {
-  width: 48rpx;
-  height: 48rpx;
+  width: 40rpx;
+  height: 40rpx;
   border-radius: 50%;
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-.record-avatar-img.to {
-  left: 24rpx;
+  flex-shrink: 0;
 }
 .record-avatar {
-  width: 48rpx;
-  height: 48rpx;
+  width: 40rpx;
+  height: 40rpx;
   border-radius: 50%;
   background: var(--color-primary);
   color: #fff;
-  font-size: 24rpx;
+  font-size: 22rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  position: absolute;
-  left: 0;
-  top: 0;
+  flex-shrink: 0;
 }
-.record-avatar.to {
-  left: 24rpx;
-  background: var(--color-success);
-}
-.record-body {
-  flex: 1;
-}
-.record-text {
+.record-name {
   font-size: var(--font-size-base);
+  max-width: 120rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.record-arrow {
+  margin: 0 12rpx;
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-base);
+  flex-shrink: 0;
 }
 .record-note {
   font-size: var(--font-size-sm);
   color: var(--color-text-secondary);
+  margin-left: 8rpx;
 }
 .record-meta {
+  margin-left: auto;
   text-align: right;
-  margin-left: 16rpx;
+  padding-left: 16rpx;
 }
 .record-score {
   font-size: var(--font-size-base);

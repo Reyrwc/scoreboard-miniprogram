@@ -11,11 +11,12 @@ exports.main = async (event, context) => {
 
     // 检查自动解散 (2分钟无记分，测试用)
     if (room.status === 'active') {
-      const lastScore = room.lastScoreAt instanceof Date
-        ? room.lastScoreAt.getTime()
-        : new Date(room.lastScoreAt).getTime()
+      const refTime = room.lastScoreAt || room.createdAt
+      const lastScore = refTime instanceof Date
+        ? refTime.getTime()
+        : new Date(refTime).getTime()
       const now = Date.now()
-      if (now - lastScore > 2 * 60 * 1000) {
+      if (!lastScore || isNaN(lastScore) || now - lastScore > 2 * 60 * 1000) {
         // 保存历史记录 + 更新用户统计（与 dissolveRoom 一致）
         const scoresForHistory = await db.collection('scores').where({ roomId }).get()
         const scoresData = scoresForHistory.data

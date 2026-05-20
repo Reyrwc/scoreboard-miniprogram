@@ -245,11 +245,13 @@ Page({
   _startExpireTimer() {
     if (this._expireTimer) clearTimeout(this._expireTimer)
     const { room } = this.data
-    if (!room || room.status !== 'active' || !room.lastScoreAt) return
+    if (!room || room.status !== 'active') return
 
-    const lastScore = room.lastScoreAt instanceof Date
-      ? room.lastScoreAt.getTime()
-      : new Date(room.lastScoreAt).getTime()
+    const refTime = room.lastScoreAt || room.createdAt
+    const lastScore = refTime instanceof Date
+      ? refTime.getTime()
+      : new Date(refTime).getTime()
+    if (!lastScore || isNaN(lastScore)) return
     const remain = 2 * 60 * 1000 - (Date.now() - lastScore)
 
     if (remain <= 0) {

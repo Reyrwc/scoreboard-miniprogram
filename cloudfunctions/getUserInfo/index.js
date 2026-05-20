@@ -22,10 +22,11 @@ exports.main = async (event, context) => {
       if (roomRes.data && roomRes.data.length > 0) {
         const room = roomRes.data[0]
         // 检查是否已过期（2分钟无记分）
-        const lastScore = room.lastScoreAt instanceof Date
-          ? room.lastScoreAt.getTime()
-          : new Date(room.lastScoreAt).getTime()
-        if (Date.now() - lastScore > 2 * 60 * 1000) {
+        const refTime = room.lastScoreAt || room.createdAt
+        const lastScore = refTime instanceof Date
+          ? refTime.getTime()
+          : new Date(refTime).getTime()
+        if (!lastScore || isNaN(lastScore) || Date.now() - lastScore > 2 * 60 * 1000) {
           // 保存历史记录 + 更新用户统计
           const scoresForHistory = await db.collection('scores').where({ roomId: room._id }).get()
           const scoresData = scoresForHistory.data

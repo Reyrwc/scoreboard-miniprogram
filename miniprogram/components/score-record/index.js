@@ -30,10 +30,24 @@ Component({
   },
   observers: {
     'scores, currentRound': function(scores, currentRound) {
-      if (!scores) return
-      const fmt = this._formatTime.bind(this)
-      scores.forEach(s => { s._time = fmt(s.createdAt) })
-      this.setData({ groups: this._buildGroups(scores, currentRound || 0) })
+      if (!scores || !scores.length) {
+        this.setData({ groups: [] })
+        return
+      }
+      const fmt = this._formatTime
+      // 创建全新对象，确保 WeChat 检测到变化并刷新视图
+      const formatted = scores.map(s => ({
+        _id: s._id,
+        fromNickname: s.fromNickname,
+        toNickname: s.toNickname,
+        fromAvatarUrl: s.fromAvatarUrl || '',
+        toAvatarUrl: s.toAvatarUrl || '',
+        amount: s.amount,
+        note: s.note,
+        roundNum: s.roundNum,
+        _time: fmt(s.createdAt)
+      }))
+      this.setData({ groups: this._buildGroups(formatted, currentRound || 0) })
     }
   },
   data: {

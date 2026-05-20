@@ -2,18 +2,18 @@
   <view wx:for="{{groups}}" wx:key="roundLabel" wx:for-item="group">
     <view class="round-header" wx:if="{{group.roundLabel}}">{{group.roundLabel}}</view>
     <view class="record-item" wx:for="{{group.items}}" wx:key="_id" wx:for-item="rec">
-      <view class="record-avatars">
+      <view class="record-player">
         <image class="record-avatar-img" wx:if="{{rec.fromAvatarUrl}}" src="{{rec.fromAvatarUrl}}" mode="aspectFill"/>
         <view class="record-avatar" wx:else>{{rec.fromNickname ? rec.fromNickname[0] : '?'}}</view>
-        <image class="record-avatar-img to" wx:if="{{rec.toAvatarUrl}}" src="{{rec.toAvatarUrl}}" mode="aspectFill"/>
-        <view class="record-avatar to" wx:else>{{rec.toNickname ? rec.toNickname[0] : '?'}}</view>
+        <text class="record-name">{{rec.fromNickname}}</text>
       </view>
-      <view class="record-body">
-        <view class="record-text">
-          <text>{{rec.fromNickname}} → {{rec.toNickname}}</text>
-          <text class="record-note" wx:if="{{rec.note}}">（{{rec.note}}）</text>
-        </view>
+      <text class="record-arrow">→</text>
+      <view class="record-player">
+        <image class="record-avatar-img" wx:if="{{rec.toAvatarUrl}}" src="{{rec.toAvatarUrl}}" mode="aspectFill"/>
+        <view class="record-avatar" wx:else>{{rec.toNickname ? rec.toNickname[0] : '?'}}</view>
+        <text class="record-name">{{rec.toNickname}}</text>
       </view>
+      <text class="record-note" wx:if="{{rec.note}}">（{{rec.note}}）</text>
       <view class="record-meta">
         <view class="record-score">+{{rec.amount}}</view>
         <view class="record-time">{{rec._time}}</view>
