@@ -14,7 +14,7 @@
         <view class="card-avatar">+</view>
         <view class="card-name">测试</view>
       </view>
-      <view class="player-card add-card" wx:if="{{isActive}}" bindtap="onInvite">
+      <view class="player-card add-card" wx:if="{{isActive}}" bindtap="onShowInvite">
         <view class="card-avatar">+</view>
         <view class="card-name">邀请</view>
       </view>
@@ -39,14 +39,32 @@
 
   <view class="menu-mask" wx:if="{{showMenu}}" bindtap="onCloseMenu">
     <view class="menu-popup" catchtap="onMenuTap">
-      <view class="menu-item" catchtap="onMenuInvite">
+      <view class="menu-item" catchtap="onShowInvite">
         <image class="menu-icon" src="{{icons.people}}"/>
-        <text>邀请</text>
+        <text>邀请好友</text>
       </view>
       <view class="menu-item danger" catchtap="onMenuDissolve">
         <image class="menu-icon" src="{{icons.logout}}"/>
         <text>解散房间</text>
       </view>
+    </view>
+  </view>
+
+  <view class="invite-modal" wx:if="{{showInviteModal}}" bindtap="onCloseInviteModal">
+    <view class="invite-modal-content" catchtap="onModalContentTap">
+      <view class="invite-modal-close" bindtap="onCloseInviteModal">×</view>
+      <view class="invite-modal-title">邀请好友加入</view>
+      <view class="invite-room-name">{{room.name}}</view>
+      <image class="invite-qrcode" wx:if="{{qrcodeUrl}}" src="{{qrcodeUrl}}" mode="aspectFit"/>
+      <view class="invite-qrcode-fallback" wx:else>
+        <view class="invite-room-id-label">房间号</view>
+        <view class="invite-room-id">{{roomId}}</view>
+        <view class="invite-room-id-hint">分享房间号给好友即可加入</view>
+      </view>
+      <button class="btn-share" open-type="share">
+        <image class="share-icon" src="{{icons.shareWhite}}"/>
+        转发给好友
+      </button>
     </view>
   </view>
 

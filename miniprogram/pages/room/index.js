@@ -14,9 +14,12 @@ Page({
     showScoreModal: false,
     targetPlayer: null,
     showMenu: false,
+    showInviteModal: false,
+    qrcodeUrl: '',
     icons: {
       people: icons.people,
-      logout: icons.logout
+      logout: icons.logout,
+      shareWhite: icons.shareWhite
     }
   },
 
@@ -53,6 +56,7 @@ Page({
       const res = await api.createRoom()
       this.setData({ roomId: res.room._id })
       this.loadRoom()
+      this.onShowInvite()
     } catch (err) {
       wx.showToast({ title: err.message || '创建失败', icon: 'none' })
       wx.navigateBack()
@@ -120,9 +124,33 @@ Page({
     // 阻止事件冒泡
   },
 
-  onMenuInvite() {
-    this.setData({ showMenu: false })
-    wx.showToast({ title: '请点击右上角分享邀请好友', icon: 'none' })
+  onShowInvite() {
+    this.setData({ showMenu: false, showInviteModal: true })
+    this._generateQRCode()
+  },
+
+  onCloseInviteModal() {
+    this.setData({ showInviteModal: false })
+  },
+
+  onModalContentTap() {
+    // 阻止事件冒泡
+  },
+
+  async _generateQRCode() {
+    try {
+      const res = await wx.cloud.callFunction({
+        name: 'getRoomQRCode',
+        data: { roomId: this.data.roomId }
+      })
+      if (res.result && res.result.imageUrl) {
+        this.setData({ qrcodeUrl: res.result.imageUrl })
+      }
+    } catch (err) {
+      console.error('生成二维码失败:', err)
+      // 使用备用方案：显示房间ID
+      this.setData({ qrcodeUrl: '' })
+    }
   },
 
   onMenuDissolve() {
@@ -148,7 +176,8 @@ Page({
   },
 
   onInvite() {
-    wx.showToast({ title: '请点击右上角分享邀请好友', icon: 'none' })
+    this.setData({ showInviteModal: true })
+    this._generateQRCode()
   },
 
   async onAddTestPlayer() {
