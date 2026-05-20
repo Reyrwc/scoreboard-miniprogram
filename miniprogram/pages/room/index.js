@@ -101,12 +101,26 @@ Page({
 
   async onScoreConfirm(e) {
     const { score, note } = e.detail
-    const { targetPlayer, roomId } = this.data
+    const { targetPlayer, roomId, room } = this.data
     try {
       wx.showLoading({ title: '提交中...' })
       await api.addScore({ roomId, toOpenid: targetPlayer.openid, amount: score, note })
-      this.setData({ showScoreModal: false, targetPlayer: null })
-      // watcher 会实时更新分数和排名，无需手动 loadRoom
+      // 直接更新本地数据，避免 loadRoom 覆盖
+      const newScore = {
+        roomId,
+        roundNum: room.currentRound,
+        fromOpenid: app.globalData.openid,
+        fromNickname: room.players.find(p => p.openid === app.globalData.openid)?.nickname || '玩家',
+        toOpenid: targetPlayer.openid,
+        toNickname: targetPlayer.nickname || '玩家',
+        amount: parseFloat(score),
+        note: note || '',
+        createdAt: new Date()
+      }
+      const scores = [newScore, ...this.data.scores]
+      this.setData({ showScoreModal: false, targetPlayer: null, scores })
+      this.calcRankings()
+      this._startExpireTimer()
     } catch (err) {
       wx.showToast({ title: err.message || '记分失败', icon: 'none' })
     } finally {
