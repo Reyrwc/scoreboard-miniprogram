@@ -5,7 +5,7 @@
   height: 100vh;
   color: var(--color-text-secondary);
 }
-.content { padding: 32rpx; }
+.content { padding: 32rpx; padding-bottom: 180rpx; }
 .section-header {
   display: flex;
   justify-content: space-between;

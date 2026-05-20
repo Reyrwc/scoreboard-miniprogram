@@ -20,12 +20,25 @@
 .record-item:last-child {
   border-bottom: none;
 }
+.record-avatars {
+  display: flex;
+  align-items: center;
+  margin-right: 16rpx;
+  flex-shrink: 0;
+  position: relative;
+  width: 72rpx;
+  height: 48rpx;
+}
 .record-avatar-img {
   width: 48rpx;
   height: 48rpx;
   border-radius: 50%;
-  margin-right: 16rpx;
-  flex-shrink: 0;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.record-avatar-img.to {
+  left: 24rpx;
 }
 .record-avatar {
   width: 48rpx;
@@ -37,8 +50,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 16rpx;
-  flex-shrink: 0;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.record-avatar.to {
+  left: 24rpx;
+  background: var(--color-success);
 }
 .record-body {
   flex: 1;

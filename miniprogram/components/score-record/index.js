@@ -6,7 +6,8 @@ Component({
   methods: {
     _formatTime(date) {
       if (!date) return ''
-      const d = new Date(date)
+      const d = date instanceof Date ? date : new Date(date)
+      if (isNaN(d.getTime())) return ''
       const h = d.getHours().toString().padStart(2, '0')
       const m = d.getMinutes().toString().padStart(2, '0')
       return h + ':' + m

@@ -26,6 +26,38 @@ exports.main = async (event, context) => {
           ? room.lastScoreAt.getTime()
           : new Date(room.lastScoreAt).getTime()
         if (Date.now() - lastScore > 2 * 60 * 1000) {
+          // 保存历史记录 + 更新用户统计
+          const scoresForHistory = await db.collection('scores').where({ roomId: room._id }).get()
+          const scoresData = scoresForHistory.data
+          const playerScores = {}
+          room.players.forEach(p => { playerScores[p.openid] = 0 })
+          scoresData.forEach(s => {
+            if (playerScores[s.toOpenid] !== undefined) playerScores[s.toOpenid] += s.amount
+            if (playerScores[s.fromOpenid] !== undefined) playerScores[s.fromOpenid] -= s.amount
+          })
+          const rankedPlayers = room.players.map(p => ({
+            openid: p.openid, nickname: p.nickname, avatarUrl: p.avatarUrl,
+            finalScore: playerScores[p.openid] || 0, rank: 0
+          })).sort((a, b) => b.finalScore - a.finalScore)
+          rankedPlayers.forEach((p, i) => { p.rank = i + 1 })
+          await db.collection('history').add({
+            data: {
+              roomId: room._id, roomName: room.name, playerCount: room.players.length,
+              roundCount: room.currentRound, players: rankedPlayers,
+              createdAt: room.createdAt, dissolvedAt: db.serverDate()
+            }
+          })
+          await Promise.all(rankedPlayers.map(player => {
+            const isWin = player.rank === 1
+            const u = {
+              totalGames: db.command.inc(1),
+              totalWinScore: db.command.inc(Math.max(0, player.finalScore)),
+              totalLoseScore: db.command.inc(Math.max(0, -player.finalScore)),
+              updatedAt: db.serverDate()
+            }
+            if (isWin) u.totalWins = db.command.inc(1)
+            return db.collection('users').doc(player.openid).update({ data: u })
+          }))
           await db.collection('rooms').doc(room._id).update({
             data: { status: 'dissolved', dissolvedAt: db.serverDate() }
           })
