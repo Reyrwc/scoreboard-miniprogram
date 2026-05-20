@@ -59,16 +59,8 @@
 .score-pos { color: var(--color-success); }
 .score-neg { color: var(--color-danger); }
 .score-zero { color: var(--color-text-secondary); }
-.add-card {
-  border: 4rpx dashed var(--color-primary);
-  border-radius: var(--radius-md);
-}
 .add-card .card-avatar { background: var(--color-primary-light); color: var(--color-primary); }
 .add-card .card-name { color: var(--color-primary); }
-.debug-card {
-  border: 4rpx dashed var(--color-warning);
-  border-radius: var(--radius-md);
-}
 .debug-card .card-avatar { background: #fff3e0; color: var(--color-warning); }
 .debug-card .card-name { color: var(--color-warning); }
 .bottom-bar {
