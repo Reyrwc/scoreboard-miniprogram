@@ -21,10 +21,20 @@ exports.main = async (event, context) => {
 
       if (roomRes.data && roomRes.data.length > 0) {
         const room = roomRes.data[0]
-        activeRoom = {
-          _id: room._id,
-          name: room.name,
-          playerCount: room.players.length
+        // 检查是否已过期（2分钟无记分）
+        const lastScore = room.lastScoreAt instanceof Date
+          ? room.lastScoreAt.getTime()
+          : new Date(room.lastScoreAt).getTime()
+        if (Date.now() - lastScore > 2 * 60 * 1000) {
+          await db.collection('rooms').doc(room._id).update({
+            data: { status: 'dissolved', dissolvedAt: db.serverDate() }
+          })
+        } else {
+          activeRoom = {
+            _id: room._id,
+            name: room.name,
+            playerCount: room.players.length
+          }
         }
       }
     } catch (roomErr) {

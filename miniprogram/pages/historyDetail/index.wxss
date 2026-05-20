@@ -11,6 +11,7 @@
 .rank-position.top-1 { color: var(--color-warning); }
 .rank-position.top-2 { color: #c0c0c0; }
 .rank-position.top-3 { color: #cd7f32; }
+.rank-avatar-img { width: 80rpx; height: 80rpx; border-radius: var(--radius-round); margin: 0 24rpx; }
 .rank-avatar { width: 80rpx; height: 80rpx; border-radius: var(--radius-round); background: var(--color-bg); display: flex; align-items: center; justify-content: center; font-size: var(--font-size-base); font-weight: var(--font-weight-semibold); margin: 0 24rpx; }
 .rank-info { flex: 1; }
 .rank-name { font-size: var(--font-size-base); font-weight: var(--font-weight-medium); }

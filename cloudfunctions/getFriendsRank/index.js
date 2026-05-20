@@ -13,6 +13,7 @@ exports.main = async (event, context) => {
       .field({
         _id: true,
         nickname: true,
+        avatarUrl: true,
         totalGames: true,
         totalWins: true,
         totalWinScore: true,

@@ -34,6 +34,7 @@ Page({
   onUnload() {
     if (this.roomWatcher) this.roomWatcher.close()
     if (this.scoreWatcher) this.scoreWatcher.close()
+    if (this._expireTimer) clearTimeout(this._expireTimer)
   },
 
   async joinRoom(roomId) {
@@ -78,6 +79,7 @@ Page({
       })
       wx.setNavigationBarTitle({ title: res.room.name })
       this.watchRoom()
+      this._startExpireTimer()
     } catch (err) {
       this.setData({ isLoading: false })
       wx.showToast({ title: err.message || '加载失败', icon: 'none' })
@@ -212,6 +214,31 @@ Page({
     }
   },
 
+  _startExpireTimer() {
+    if (this._expireTimer) clearTimeout(this._expireTimer)
+    const { room } = this.data
+    if (!room || room.status !== 'active' || !room.lastScoreAt) return
+
+    const lastScore = room.lastScoreAt instanceof Date
+      ? room.lastScoreAt.getTime()
+      : new Date(room.lastScoreAt).getTime()
+    const remain = 2 * 60 * 1000 - (Date.now() - lastScore)
+
+    if (remain <= 0) {
+      // 已过期，触发解散检查
+      this.loadRoom()
+      return
+    }
+
+    this._expireTimer = setTimeout(() => {
+      if (this.data.isActive) {
+        wx.showToast({ title: '房间已过期', icon: 'none' })
+        this.loadRoom()
+        setTimeout(() => wx.navigateBack(), 1500)
+      }
+    }, remain)
+  },
+
   watchRoom() {
     if (this.roomWatcher) this.roomWatcher.close()
     if (this.scoreWatcher) this.scoreWatcher.close()
@@ -223,7 +250,12 @@ Page({
       onChange: (snapshot) => {
         const room = snapshot.docs[0]
         if (!room) return
-        this.setData({ room })
+        this.setData({ room, isActive: room.status === 'active' })
+        if (room.status !== 'active') {
+          if (this._expireTimer) clearTimeout(this._expireTimer)
+          wx.showToast({ title: '房间已解散', icon: 'none' })
+          setTimeout(() => wx.navigateBack(), 1500)
+        }
       },
       onError: (err) => {
         console.error('房间监听失败:', err)

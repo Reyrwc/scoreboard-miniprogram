@@ -13,7 +13,8 @@
       </view>
       <view class="history-players">
         <view class="player-chip" wx:for="{{item.players}}" wx:for-item="player" wx:key="openid">
-          <view class="player-mini-avatar">{{player.nickname ? player.nickname[0] : '?'}}</view>
+          <image class="player-mini-avatar-img" wx:if="{{player.avatarUrl}}" src="{{player.avatarUrl}}" mode="aspectFill"/>
+          <view class="player-mini-avatar" wx:else>{{player.nickname ? player.nickname[0] : '?'}}</view>
           <view class="player-score {{player.finalScore >= 0 ? 'positive' : 'negative'}}">
             {{player.finalScore >= 0 ? '+' : ''}}{{player.finalScore}}
           </view>

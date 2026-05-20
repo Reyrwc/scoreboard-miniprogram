@@ -20,6 +20,11 @@
 .badge-lose { background: #ffe8e8; color: var(--color-danger); }
 .history-players { display: flex; gap: 24rpx; flex-wrap: wrap; }
 .player-chip { display: flex; align-items: center; gap: 12rpx; }
+.player-mini-avatar-img {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: var(--radius-round);
+}
 .player-mini-avatar {
   width: 48rpx;
   height: 48rpx;
