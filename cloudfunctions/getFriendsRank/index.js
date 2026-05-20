@@ -26,7 +26,7 @@ exports.main = async (event, context) => {
     let users = []
 
     if (friendSet.size > 0) {
-      // 2a. 有好友：批量查询好友的用户数据（in 查询限20个，分批）
+      // 批量查询好友的用户数据（in 查询限20个，分批）
       const friendOpenids = [...friendSet]
       const field = {
         _id: true,
@@ -46,22 +46,6 @@ exports.main = async (event, context) => {
           .get()
         users.push(...res.data)
       }
-    } else {
-      // 2b. 没有好友：降级显示全平台排行
-      const res = await db.collection('users')
-        .where({ totalGames: db.command.gt(0) })
-        .field({
-          _id: true,
-          nickname: true,
-          avatarUrl: true,
-          totalGames: true,
-          totalWins: true,
-          totalWinScore: true,
-          totalLoseScore: true
-        })
-        .limit(100)
-        .get()
-      users = res.data
     }
 
     // 3. 计算统计数据并排序
