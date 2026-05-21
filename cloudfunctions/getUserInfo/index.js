@@ -28,6 +28,13 @@ exports.main = async (event, context) => {
           ? refTime.getTime()
           : new Date(refTime).getTime()
         if (!lastScore || isNaN(lastScore) || Date.now() - lastScore > 2 * 60 * 1000) {
+          // 防止并发调用导致重复历史记录
+          const existingHistory = await db.collection('history').where({ roomId: room._id }).limit(1).get()
+          if (existingHistory.data && existingHistory.data.length > 0) {
+            await db.collection('rooms').doc(room._id).update({
+              data: { status: 'dissolved', dissolvedAt: db.serverDate() }
+            })
+          } else {
           // 保存历史记录 + 更新用户统计
           const scoresForHistory = await db.collection('scores').where({ roomId: room._id }).get()
           const scoresData = scoresForHistory.data
@@ -65,6 +72,7 @@ exports.main = async (event, context) => {
           await db.collection('rooms').doc(room._id).update({
             data: { status: 'dissolved', dissolvedAt: db.serverDate() }
           })
+          } // end else (no existing history)
         } else {
           activeRoom = {
             _id: room._id,
@@ -95,6 +103,13 @@ exports.main = async (event, context) => {
                 ? refTime.getTime()
                 : new Date(refTime).getTime()
               if (!lastScore || isNaN(lastScore) || Date.now() - lastScore > 2 * 60 * 1000) {
+                // 防止并发调用导致重复历史记录
+                const existingHistory = await db.collection('history').where({ roomId: room._id }).limit(1).get()
+                if (existingHistory.data && existingHistory.data.length > 0) {
+                  await db.collection('rooms').doc(room._id).update({
+                    data: { status: 'dissolved', dissolvedAt: db.serverDate() }
+                  })
+                } else {
                 const scoresForHistory = await db.collection('scores').where({ roomId: room._id }).get()
                 const scoresData = scoresForHistory.data
                 const allPlayers = room.allPlayers || room.players
@@ -131,6 +146,7 @@ exports.main = async (event, context) => {
                 await db.collection('rooms').doc(room._id).update({
                   data: { status: 'dissolved', dissolvedAt: db.serverDate() }
                 })
+                } // end else (no existing history)
               }
             }
           }

@@ -17,6 +17,15 @@ exports.main = async (event, context) => {
         : new Date(refTime).getTime()
       const now = Date.now()
       if (!lastScore || isNaN(lastScore) || now - lastScore > 2 * 60 * 1000) {
+        // 防止并发调用导致重复历史记录
+        const existingHistory = await db.collection('history').where({ roomId }).limit(1).get()
+        if (existingHistory.data && existingHistory.data.length > 0) {
+          await db.collection('rooms').doc(roomId).update({
+            data: { status: 'dissolved', dissolvedAt: db.serverDate() }
+          })
+          room.status = 'dissolved'
+          return { code: 0, room, scores: [], rankings: [] }
+        }
         // 保存历史记录 + 更新用户统计（与 dissolveRoom 一致）
         const scoresForHistory = await db.collection('scores').where({ roomId }).get()
         const scoresData = scoresForHistory.data
