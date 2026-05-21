@@ -33,13 +33,15 @@ exports.main = async (event, context) => {
       openid: testId,
       nickname: nickname,
       avatarUrl: '',
-      joinedAt: new Date()
+      joinedAt: new Date(),
+      active: true
     }
 
     // 添加测试玩家到房间
     await db.collection('rooms').doc(roomId).update({
       data: {
-        players: _.push(testPlayer)
+        players: _.push(testPlayer),
+        allPlayers: _.push(testPlayer)
       }
     })
 
