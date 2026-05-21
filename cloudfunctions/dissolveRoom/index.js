@@ -12,8 +12,11 @@ exports.main = async (event, context) => {
     const roomRes = await db.collection('rooms').doc(roomId).get()
     const room = roomRes.data
 
-    if (room.ownerId && room.ownerId !== OPENID) {
-      return { code: -1, message: '只有房主可以解散房间' }
+    // 房主或房间内成员均可解散
+    const isOwner = room.ownerId === OPENID
+    const isMember = room.players.some(p => p.openid === OPENID)
+    if (!isOwner && !isMember) {
+      return { code: -1, message: '只有房间成员可以解散房间' }
     }
 
     // 获取所有记分记录

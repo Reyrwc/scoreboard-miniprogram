@@ -101,18 +101,20 @@
   _id: "room_abc123",               // 房间 ID (自动生成)
   name: "快乐老家AB12",             // 房间名称（随机名+4位码）
   ownerId: "openid_owner",          // 房主 openid（退出后为空字符串）
-  players: [                        // 当前在房间内的玩家列表
+  players: [                        // 房间内所有玩家（含已退出，通过 active 字段区分）
     {
       openid: "openid_1",
       nickname: "张三",
       avatarUrl: "https://...",
-      joinedAt: "2026-05-17T10:00:00"
+      joinedAt: "2026-05-17T10:00:00",
+      active: true                  // true=在房间内, false=已退出(信息保留)
     },
     {
       openid: "openid_2",
       nickname: "李四",
       avatarUrl: "https://...",
-      joinedAt: "2026-05-17T10:01:00"
+      joinedAt: "2026-05-17T10:01:00",
+      active: false                 // 已退出，但其他玩家仍可为其记分
     }
   ],
   allPlayers: [                     // 所有加入过的玩家（含已退出），结构同 players
@@ -209,10 +211,18 @@
 
 // 返回
 {
-  success: true,
-  user: { _id, nickname, avatarUrl, totalGames, ... }
+  code: 0,
+  user: { _id, nickname, avatarUrl, totalGames, ... },
+  activeRoom: { _id, name, playerCount, createdAt }  // 如有活跃房间
 }
 ```
+
+**逻辑：**
+1. 获取用户信息
+2. 查询用户是否在活跃房间中（排除 `active: false` 的记录）
+3. 如果在活跃房间中，检查是否过期（2 分钟无记分），过期则自动解散并保存历史
+4. 如果不在任何房间中，兜底检查用户作为 `ownerId` 的孤儿房间（房主已退出但房间仍 active），过期则解散
+5. 返回用户信息和活跃房间（如有）
 
 #### updateUserInfo - 更新用户信息
 ```javascript
@@ -268,9 +278,10 @@
 
 **逻辑：**
 1. 检查房间是否存在且状态为 active
-2. 检查用户是否已在其他活跃房间
-3. 检查房间人数是否已满 (20人)
-4. 加入房间
+2. 检查用户是否已在其他活跃房间（排除 `active: false` 的记录）
+3. 如果用户已在房间但 `active: false`，标记为 `active: true`（重新加入）
+4. 检查房间活跃玩家人数是否已满 (20人)
+5. 加入房间，新玩家带 `active: true` 字段，同时加入 `allPlayers`
 
 #### getRoomInfo - 获取房间信息
 ```javascript
@@ -297,14 +308,16 @@
 
 // 返回
 {
-  success: true
+  code: 0
 }
 ```
 
 **逻辑：**
-1. 从 `players` 列表移除
-2. 如果是房主，清空 `ownerId`（不转移）
-3. 如果是最后一个玩家，解散房间并保存历史
+1. 验证调用者为活跃玩家（`active !== false`）
+2. 标记玩家 `active: false`（read-modify-write，不从 players 数组删除）
+3. 如果是最后一个活跃玩家，调用 `dissolveWithHistory` 解散并保存历史
+4. 如果还有活跃玩家，检查是否已过期（2 分钟无记分），过期则解散
+5. 保留 `ownerId` 不清空（用于孤儿房间检测）
 
 #### dissolveRoom - 解散房间
 ```javascript
@@ -321,7 +334,7 @@
 ```
 
 **逻辑：**
-1. 只有房主可以解散（`ownerId` 为空时任何人都可解散）
+1. 任何房间成员（通过 `ownerId` 或 players 数组匹配）均可解散
 2. 使用 `allPlayers`（含已退出玩家）生成历史记录
 3. 更新房间状态为 dissolved
 4. 更新所有玩家的统计数据
@@ -348,7 +361,7 @@
 
 **逻辑：**
 1. 验证房间存在且状态为 active
-2. 验证记分人和被记分人都在房间内
+2. 验证记分人为活跃玩家（`active !== false`），被记分人在 players 数组中即可（可给已退出用户记分）
 3. 验证 amount > 0
 4. 验证记分人 ≠ 被记分人（不能给自己加分）
 5. 创建记分记录
@@ -746,11 +759,22 @@ Page({
 
 ### 7.4 自动解散
 - 云开发没有定时器（cron）
-- 实现方式：客户端 `_startExpireTimer` 基于 `lastScoreAt || createdAt` 倒计时，到期后调用 `loadRoom()` → `getRoomInfo` 触发解散检查
-- `getRoomInfo` 和 `getUserInfo` 查询时检查 `lastScoreAt`（无记录则用 `createdAt`），超过 2 分钟标记为 dissolved
+- **三层保障机制**：
+  1. **客户端定时器**：`_startExpireTimer` 基于 `lastScoreAt || createdAt` 倒计时，到期后调用 `loadRoom()` → `getRoomInfo` 触发解散检查
+  2. **服务端懒检查**：`getRoomInfo` 和 `getUserInfo` 查询时检查 `lastScoreAt`（无记录则用 `createdAt`），超过 2 分钟标记为 dissolved
+  3. **孤儿房间兜底**：`getUserInfo` 额外检查用户作为 `ownerId` 但已不在 players 中的房间，二次确认状态后解散（防止与 leaveRoom 并发导致重复历史）
 - 自动解散时使用 `allPlayers`（含已退出玩家）写入 `history` 集合并更新用户统计
 - 每次记分后客户端重置 `_startExpireTimer`
 - 用户尝试操作已解散房间时，提示"房间已解散"
+
+### 7.7 玩家退出机制（active 字段）
+- 玩家退出房间时**不从 players 数组删除**，而是标记 `active: false`
+- 保留玩家信息（头像、昵称、分数）供房间内其他玩家查看
+- 其他活跃玩家仍可给已退出用户记分（`addScore` 仅校验被记分人在 players 数组中）
+- 已退出用户可加入/创建其他房间（`joinRoom`/`createRoom` 的重复房间检查排除 `active: false` 的记录）
+- 已退出用户可重新加入当前房间（`joinRoom` 检测到 `active: false` 时标记为 `active: true`）
+- 退出/加入操作使用 **read-modify-write** 模式（微信云开发不支持 `arrayFilters`）
+- 人数上限检查只计算活跃玩家（`active !== false`）
 
 ### 7.5 云开发免费额度
 - 每日读次数：50,000
@@ -767,6 +791,6 @@ Page({
 
 ---
 
-*文档版本：v1.5*
+*文档版本：v1.6*
 *创建日期：2026-05-19*
 *更新日期：2026-05-21*

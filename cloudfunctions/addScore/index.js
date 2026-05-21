@@ -23,8 +23,8 @@ exports.main = async (event, context) => {
       return { code: -1, message: '房间已结束' }
     }
 
-    // 验证双方都在房间内
-    const fromInRoom = room.players.some(p => p.openid === OPENID)
+    // 验证记分方为活跃玩家，接收方在房间内即可（可给已退出用户记分）
+    const fromInRoom = room.players.some(p => p.openid === OPENID && p.active !== false)
     const toInRoom = room.players.some(p => p.openid === toOpenid)
     if (!fromInRoom || !toInRoom) {
       return { code: -1, message: '玩家不在房间内' }

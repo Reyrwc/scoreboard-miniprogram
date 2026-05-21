@@ -8,9 +8,9 @@ exports.main = async (event, context) => {
   const { roomId } = event
 
   try {
-    // 检查用户是否已在其他活跃房间
+    // 检查用户是否已在其他活跃房间（排除 inactive 玩家）
     const existing = await db.collection('rooms').where({
-      'players.openid': OPENID,
+      players: _.elemMatch({ openid: OPENID, active: _.neq(false) }),
       status: 'active'
     }).get()
 
@@ -26,14 +26,28 @@ exports.main = async (event, context) => {
       return { code: -1, message: '房间已解散' }
     }
 
-    // 检查是否已在房间内
-    const inRoom = room.players.some(p => p.openid === OPENID)
-    if (inRoom) {
+    // 检查是否已在房间内且为活跃状态
+    const existingPlayer = room.players.find(p => p.openid === OPENID)
+    if (existingPlayer && existingPlayer.active !== false) {
       return { code: 0, room }
     }
 
-    // 检查人数上限
-    if (room.players.length >= 20) {
+    // 已退出的用户重新加入，标记为 active
+    if (existingPlayer && existingPlayer.active === false) {
+      const updatedPlayers = room.players.map(p => {
+        if (p.openid === OPENID) return { ...p, active: true }
+        return p
+      })
+      await db.collection('rooms').doc(roomId).update({
+        data: { players: updatedPlayers }
+      })
+      const updatedRoom = await db.collection('rooms').doc(roomId).get()
+      return { code: 0, room: updatedRoom.data }
+    }
+
+    // 检查人数上限（只计活跃玩家）
+    const activeCount = room.players.filter(p => p.active !== false).length
+    if (activeCount >= 20) {
       return { code: -1, message: '房间已满（最多20人）' }
     }
 
@@ -41,12 +55,13 @@ exports.main = async (event, context) => {
     const userRes = await db.collection('users').doc(OPENID).get()
     const user = userRes.data
 
-    // 加入房间
+    // 新用户加入房间
     const playerData = {
       openid: OPENID,
       nickname: user.nickname || '玩家',
       avatarUrl: user.avatarUrl || '',
-      joinedAt: new Date()
+      joinedAt: new Date(),
+      active: true
     }
     await db.collection('rooms').doc(roomId).update({
       data: {

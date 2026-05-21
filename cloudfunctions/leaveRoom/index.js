@@ -53,24 +53,24 @@ exports.main = async (event, context) => {
     const roomRes = await db.collection('rooms').doc(roomId).get()
     const room = roomRes.data
 
-    // Validate caller is a member
-    if (!room.players.some(p => p.openid === OPENID)) {
+    // Validate caller is an active member
+    const me = room.players.find(p => p.openid === OPENID)
+    if (!me || me.active === false) {
       return { code: -1, message: '你不在该房间中' }
     }
 
-    // Pull the player, clear owner if needed
-    const updates = { players: _.pull({ openid: OPENID }) }
-    if (room.ownerId === OPENID) {
-      updates.ownerId = ''
-    }
-    await db.collection('rooms').doc(roomId).update({ data: updates })
+    // 标记玩家为 inactive（read-modify-write，兼容微信云开发）
+    const updatedPlayers = room.players.map(p => {
+      if (p.openid === OPENID) return { ...p, active: false }
+      return p
+    })
+    await db.collection('rooms').doc(roomId).update({
+      data: { players: updatedPlayers }
+    })
 
-    // Re-read to check remaining players
-    const updatedRoomRes = await db.collection('rooms').doc(roomId).get()
-    const updatedRoom = updatedRoomRes.data
-
-    // 最后一人退出，直接解散
-    if (updatedRoom.players.length === 0) {
+    // 最后一个活跃玩家退出，直接解散
+    const hasActivePlayers = updatedPlayers.some(p => p.active !== false)
+    if (!hasActivePlayers) {
       await dissolveWithHistory(room, roomId)
       return { code: 0 }
     }
