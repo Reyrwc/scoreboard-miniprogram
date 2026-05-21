@@ -36,11 +36,10 @@ exports.main = async (event, context) => {
       joinedAt: new Date()
     }
 
-    // 添加测试玩家到房间（同时更新 allPlayers 以保证历史记录完整）
+    // 添加测试玩家到房间
     await db.collection('rooms').doc(roomId).update({
       data: {
-        players: _.push(testPlayer),
-        allPlayers: _.push(testPlayer)
+        players: _.push(testPlayer)
       }
     })
 

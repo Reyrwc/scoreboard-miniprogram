@@ -1,15 +1,14 @@
 const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
-const _ = db.command
 
 exports.main = async (event, context) => {
   try {
     const { OPENID } = cloud.getWXContext()
 
-    // 检查用户是否已在其他活跃房间（排除 inactive 玩家）
+    // 检查用户是否已在其他活跃房间
     const existing = await db.collection('rooms').where({
-      players: _.elemMatch({ openid: OPENID, active: _.neq(false) }),
+      'players.openid': OPENID,
       status: 'active'
     }).get()
 

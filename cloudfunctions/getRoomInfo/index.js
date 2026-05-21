@@ -64,7 +64,7 @@ exports.main = async (event, context) => {
       roomId
     }).orderBy('createdAt', 'desc').limit(100).get()
 
-    // 计算排名（players 中包含 inactive 用户，分数完整）
+    // 计算排名
     const rankings = room.players.map(p => {
       const totalScore = scoresRes.data
         .filter(s => s.toOpenid === p.openid)
