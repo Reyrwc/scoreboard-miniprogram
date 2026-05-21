@@ -159,6 +159,7 @@
   roomName: "张三的房间",           // 房间名称
   playerCount: 4,                   // 玩家数
   roundCount: 4,                    // 总局数
+  totalScores: 12,                  // 总记分次数
   players: [                        // 玩家信息
     {
       openid: "openid_1",

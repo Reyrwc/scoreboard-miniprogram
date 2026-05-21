@@ -4,21 +4,6 @@
     <view class="room-date">{{history.dateLabel}} · {{history.timeRange}} · {{history.playerCount}}人 · {{history.roundCount}}局</view>
   </view>
 
-  <view class="stats-row">
-    <view class="stat-card">
-      <view class="stat-value">{{history.roundCount}}</view>
-      <view class="stat-label">总轮次</view>
-    </view>
-    <view class="stat-card">
-      <view class="stat-value">{{history.playerCount}}</view>
-      <view class="stat-label">玩家数</view>
-    </view>
-    <view class="stat-card">
-      <view class="stat-value">{{history.totalScores}}</view>
-      <view class="stat-label">总记分</view>
-    </view>
-  </view>
-
   <view class="section-header">
     <text class="section-title">最终排名</text>
   </view>

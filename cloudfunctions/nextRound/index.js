@@ -16,7 +16,7 @@ exports.main = async (event, context) => {
         : new Date(lastNextRoundTime).getTime()
       const diff = Date.now() - lastTime
       if (diff < 60000) {
-        return { code: -1, message: '已有人点击，一分钟后再试' }
+        return { code: -1, message: '冷却中' }
       }
     }
 

@@ -37,6 +37,7 @@ Page({
       const res = await api.getHistory({ page: this.data.page })
       const list = res.list.map(item => ({
         ...item,
+        roundCount: (item.roundCount || 0) + 1,
         dateLabel: formatDate(item.dissolvedAt),
         timeRange: formatShortTime(item.createdAt) + ' - ' + formatShortTime(item.dissolvedAt),
         myScore: item.players.find(p => p.openid === app.globalData.openid)?.finalScore || 0

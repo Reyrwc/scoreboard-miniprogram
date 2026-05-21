@@ -44,6 +44,7 @@ exports.main = async (event, context) => {
       roomName: room.name,
       playerCount: room.players.length,
       roundCount: room.currentRound,
+      totalScores: scores.length,
       players: rankedPlayers,
       createdAt: room.createdAt,
       dissolvedAt: db.serverDate()

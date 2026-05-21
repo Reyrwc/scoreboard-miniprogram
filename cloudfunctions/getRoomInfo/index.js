@@ -34,7 +34,8 @@ exports.main = async (event, context) => {
         await db.collection('history').add({
           data: {
             roomId, roomName: room.name, playerCount: room.players.length,
-            roundCount: room.currentRound, players: rankedPlayers,
+            roundCount: room.currentRound, totalScores: scoresData.length,
+            players: rankedPlayers,
             createdAt: room.createdAt, dissolvedAt: db.serverDate()
           }
         })

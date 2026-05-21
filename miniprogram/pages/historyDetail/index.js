@@ -25,6 +25,7 @@ Page({
       const h = res.list[0]
       const history = h ? {
         ...h,
+        roundCount: (h.roundCount || 0) + 1,
         dateLabel: formatDate(h.dissolvedAt),
         timeRange: formatShortTime(h.createdAt) + ' - ' + formatShortTime(h.dissolvedAt)
       } : null
