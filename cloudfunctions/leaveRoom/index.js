@@ -71,7 +71,11 @@ exports.main = async (event, context) => {
     // 最后一个活跃玩家退出，直接解散
     const hasActivePlayers = updatedPlayers.some(p => p.active !== false)
     if (!hasActivePlayers) {
-      await dissolveWithHistory(room, roomId)
+      // 二次确认房间仍为 active（防止与 getUserInfo 并发解散导致重复历史）
+      const freshRoom = await db.collection('rooms').doc(roomId).get()
+      if (freshRoom.data.status === 'active') {
+        await dissolveWithHistory(room, roomId)
+      }
       return { code: 0 }
     }
 
@@ -79,7 +83,11 @@ exports.main = async (event, context) => {
     const refTime = room.lastScoreAt || room.createdAt
     const lastScore = refTime instanceof Date ? refTime.getTime() : new Date(refTime).getTime()
     if (lastScore && !isNaN(lastScore) && Date.now() - lastScore > 2 * 60 * 1000) {
-      await dissolveWithHistory(room, roomId)
+      // 二次确认房间仍为 active（防止与 getUserInfo 并发解散导致重复历史）
+      const freshRoom = await db.collection('rooms').doc(roomId).get()
+      if (freshRoom.data.status === 'active') {
+        await dissolveWithHistory(room, roomId)
+      }
     }
 
     return { code: 0 }
