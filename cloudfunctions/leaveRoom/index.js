@@ -38,9 +38,6 @@ async function dissolveWithHistory(room, roomId) {
     if (isWin) u.totalWins = db.command.inc(1)
     return db.collection('users').doc(player.openid).update({ data: u })
   }))
-  await db.collection('rooms').doc(roomId).update({
-    data: { status: 'dissolved', dissolvedAt: db.serverDate() }
-  })
 }
 
 exports.main = async (event, context) => {
@@ -68,12 +65,20 @@ exports.main = async (event, context) => {
       data: { players: updatedPlayers }
     })
 
+    // 原子抢锁：将 status 从 active 改为 dissolved
+    async function tryClaimDissolve() {
+      const res = await db.collection('rooms').where({
+        _id: roomId, status: 'active'
+      }).update({
+        data: { status: 'dissolved', dissolvedAt: db.serverDate() }
+      })
+      return res.stats.updated > 0
+    }
+
     // 最后一个活跃玩家退出，直接解散
     const hasActivePlayers = updatedPlayers.some(p => p.active !== false)
     if (!hasActivePlayers) {
-      // 二次确认房间仍为 active（防止与 getUserInfo 并发解散导致重复历史）
-      const freshRoom = await db.collection('rooms').doc(roomId).get()
-      if (freshRoom.data.status === 'active') {
+      if (await tryClaimDissolve()) {
         await dissolveWithHistory(room, roomId)
       }
       return { code: 0 }
@@ -83,9 +88,7 @@ exports.main = async (event, context) => {
     const refTime = room.lastScoreAt || room.createdAt
     const lastScore = refTime instanceof Date ? refTime.getTime() : new Date(refTime).getTime()
     if (lastScore && !isNaN(lastScore) && Date.now() - lastScore > 2 * 60 * 1000) {
-      // 二次确认房间仍为 active（防止与 getUserInfo 并发解散导致重复历史）
-      const freshRoom = await db.collection('rooms').doc(roomId).get()
-      if (freshRoom.data.status === 'active') {
+      if (await tryClaimDissolve()) {
         await dissolveWithHistory(room, roomId)
       }
     }

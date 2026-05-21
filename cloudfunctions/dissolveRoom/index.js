@@ -42,6 +42,16 @@ exports.main = async (event, context) => {
 
     rankedPlayers.forEach((p, i) => { p.rank = i + 1 })
 
+    // 原子抢锁：防止与其他解散路径并发导致重复历史
+    const claimRes = await db.collection('rooms').where({
+      _id: roomId, status: 'active'
+    }).update({
+      data: { status: 'dissolved', dissolvedAt: db.serverDate() }
+    })
+    if (claimRes.stats.updated === 0) {
+      return { code: 0, message: '房间已解散' }
+    }
+
     // 创建历史记录
     const history = {
       roomId,
@@ -54,11 +64,6 @@ exports.main = async (event, context) => {
       dissolvedAt: db.serverDate()
     }
     await db.collection('history').add({ data: history })
-
-    // 更新房间状态
-    await db.collection('rooms').doc(roomId).update({
-      data: { status: 'dissolved', dissolvedAt: db.serverDate() }
-    })
 
     // 更新用户统计
     await Promise.all(rankedPlayers.map(player => {

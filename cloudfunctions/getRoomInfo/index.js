@@ -9,7 +9,7 @@ exports.main = async (event, context) => {
     const roomRes = await db.collection('rooms').doc(roomId).get()
     const room = roomRes.data
 
-    // 检查自动解散 (2分钟无记分，测试用)
+    // 检查自动解散 (2分钟无记分)
     if (room.status === 'active') {
       const refTime = room.lastScoreAt || room.createdAt
       const lastScore = refTime instanceof Date
@@ -17,52 +17,48 @@ exports.main = async (event, context) => {
         : new Date(refTime).getTime()
       const now = Date.now()
       if (!lastScore || isNaN(lastScore) || now - lastScore > 2 * 60 * 1000) {
-        // 防止并发调用导致重复历史记录
-        const existingHistory = await db.collection('history').where({ roomId }).limit(1).get()
-        if (existingHistory.data && existingHistory.data.length > 0) {
-          await db.collection('rooms').doc(roomId).update({
-            data: { status: 'dissolved', dissolvedAt: db.serverDate() }
-          })
-          room.status = 'dissolved'
-          return { code: 0, room, scores: [], rankings: [] }
-        }
-        // 保存历史记录 + 更新用户统计（与 dissolveRoom 一致）
-        const scoresForHistory = await db.collection('scores').where({ roomId }).get()
-        const scoresData = scoresForHistory.data
-        const allPlayers = room.allPlayers || room.players
-        const playerScores = {}
-        allPlayers.forEach(p => { playerScores[p.openid] = 0 })
-        scoresData.forEach(s => {
-          if (playerScores[s.toOpenid] !== undefined) playerScores[s.toOpenid] += s.amount
-          if (playerScores[s.fromOpenid] !== undefined) playerScores[s.fromOpenid] -= s.amount
-        })
-        const rankedPlayers = allPlayers.map(p => ({
-          openid: p.openid, nickname: p.nickname, avatarUrl: p.avatarUrl,
-          finalScore: playerScores[p.openid] || 0, rank: 0
-        })).sort((a, b) => b.finalScore - a.finalScore)
-        rankedPlayers.forEach((p, i) => { p.rank = i + 1 })
-        await db.collection('history').add({
-          data: {
-            roomId, roomName: room.name, playerCount: allPlayers.length,
-            roundCount: room.currentRound, totalScores: scoresData.length,
-            players: rankedPlayers,
-            createdAt: room.createdAt, dissolvedAt: db.serverDate()
-          }
-        })
-        await Promise.all(rankedPlayers.map(player => {
-          const isWin = player.rank === 1
-          const u = {
-            totalGames: db.command.inc(1),
-            totalWinScore: db.command.inc(Math.max(0, player.finalScore)),
-            totalLoseScore: db.command.inc(Math.max(0, -player.finalScore)),
-            updatedAt: db.serverDate()
-          }
-          if (isWin) u.totalWins = db.command.inc(1)
-          return db.collection('users').doc(player.openid).update({ data: u })
-        }))
-        await db.collection('rooms').doc(roomId).update({
+        // 原子抢锁：只有第一个成功的调用才写 history
+        const claimRes = await db.collection('rooms').where({
+          _id: roomId, status: 'active'
+        }).update({
           data: { status: 'dissolved', dissolvedAt: db.serverDate() }
         })
+        if (claimRes.stats.updated > 0) {
+          // 抢到锁，写入历史记录
+          const scoresForHistory = await db.collection('scores').where({ roomId }).get()
+          const scoresData = scoresForHistory.data
+          const allPlayers = room.allPlayers || room.players
+          const playerScores = {}
+          allPlayers.forEach(p => { playerScores[p.openid] = 0 })
+          scoresData.forEach(s => {
+            if (playerScores[s.toOpenid] !== undefined) playerScores[s.toOpenid] += s.amount
+            if (playerScores[s.fromOpenid] !== undefined) playerScores[s.fromOpenid] -= s.amount
+          })
+          const rankedPlayers = allPlayers.map(p => ({
+            openid: p.openid, nickname: p.nickname, avatarUrl: p.avatarUrl,
+            finalScore: playerScores[p.openid] || 0, rank: 0
+          })).sort((a, b) => b.finalScore - a.finalScore)
+          rankedPlayers.forEach((p, i) => { p.rank = i + 1 })
+          await db.collection('history').add({
+            data: {
+              roomId, roomName: room.name, playerCount: allPlayers.length,
+              roundCount: room.currentRound, totalScores: scoresData.length,
+              players: rankedPlayers,
+              createdAt: room.createdAt, dissolvedAt: db.serverDate()
+            }
+          })
+          await Promise.all(rankedPlayers.map(player => {
+            const isWin = player.rank === 1
+            const u = {
+              totalGames: db.command.inc(1),
+              totalWinScore: db.command.inc(Math.max(0, player.finalScore)),
+              totalLoseScore: db.command.inc(Math.max(0, -player.finalScore)),
+              updatedAt: db.serverDate()
+            }
+            if (isWin) u.totalWins = db.command.inc(1)
+            return db.collection('users').doc(player.openid).update({ data: u })
+          }))
+        }
         room.status = 'dissolved'
         return { code: 0, room, scores: [], rankings: [] }
       }
