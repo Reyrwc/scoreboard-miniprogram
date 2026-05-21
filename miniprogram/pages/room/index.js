@@ -84,7 +84,7 @@ Page({
         if (!s._time) {
           const d = s.createdAt instanceof Date ? s.createdAt : new Date(s.createdAt)
           if (!isNaN(d.getTime())) {
-            s._time = d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0')
+            s._time = d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0') + ':' + d.getSeconds().toString().padStart(2, '0')
           } else {
             s._time = ''
           }
@@ -186,6 +186,7 @@ Page({
       const fromPlayer = room.players.find(p => p.openid === app.globalData.openid)
       const h = now.getHours().toString().padStart(2, '0')
       const m = now.getMinutes().toString().padStart(2, '0')
+      const s = now.getSeconds().toString().padStart(2, '0')
       const newScore = {
         _id: 'local_' + now.getTime(),
         roomId,
@@ -199,7 +200,7 @@ Page({
         amount: parseFloat(score),
         note: note || '',
         createdAt: now,
-        _time: h + ':' + m
+        _time: h + ':' + m + ':' + s
       }
       const scores = [newScore, ...this.data.scores]
       // 更新 room.lastScoreAt 使过期计时器从本次记分开始重新倒计时

@@ -91,6 +91,21 @@ Page({
       wx.switchTab({ url: '/pages/profile/index' })
       return
     }
+    if (this.data.activeRoom) {
+      wx.showModal({
+        title: '提示',
+        content: '你当前已在房间中，创建新房间将自动退出当前房间，是否继续？',
+        success: (res) => {
+          if (res.confirm) {
+            api.leaveRoom({ roomId: this.data.activeRoom._id }).then(() => {
+              this.setData({ activeRoom: null })
+              wx.navigateTo({ url: '/pages/room/index?create=true' })
+            })
+          }
+        }
+      })
+      return
+    }
     wx.navigateTo({ url: '/pages/room/index?create=true' })
   },
 
