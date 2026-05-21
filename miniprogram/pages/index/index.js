@@ -1,6 +1,7 @@
 const auth = require('../../utils/auth')
 const api = require('../../utils/api')
 const icons = require('../../utils/icons')
+const { formatShortTime } = require('../../utils/util')
 const app = getApp()
 
 Page({
@@ -56,10 +57,14 @@ Page({
         user.winRate = user.totalGames > 0 ? (user.totalWins / user.totalGames * 100).toFixed(1) : '0.0'
         user.netScore = (user.totalWinScore || 0) - (user.totalLoseScore || 0)
         app.globalData.userInfo = user
+        const activeRoom = res.activeRoom ? {
+          ...res.activeRoom,
+          startTime: formatShortTime(res.activeRoom.createdAt)
+        } : null
         this.setData({
           userInfo: user,
           isLoggedIn: true,
-          activeRoom: res.activeRoom || null
+          activeRoom
         })
         return true
       }

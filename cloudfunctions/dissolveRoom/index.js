@@ -12,7 +12,7 @@ exports.main = async (event, context) => {
     const roomRes = await db.collection('rooms').doc(roomId).get()
     const room = roomRes.data
 
-    if (room.ownerId !== OPENID) {
+    if (room.ownerId && room.ownerId !== OPENID) {
       return { code: -1, message: '只有房主可以解散房间' }
     }
 
@@ -20,15 +20,18 @@ exports.main = async (event, context) => {
     const scoresRes = await db.collection('scores').where({ roomId }).get()
     const scores = scoresRes.data
 
+    // 使用 allPlayers（包含已退出的玩家），向后兼容旧房间
+    const allPlayers = room.allPlayers || room.players
+
     // 计算最终排名
     const playerScores = {}
-    room.players.forEach(p => { playerScores[p.openid] = 0 })
+    allPlayers.forEach(p => { playerScores[p.openid] = 0 })
     scores.forEach(s => {
       if (playerScores[s.toOpenid] !== undefined) playerScores[s.toOpenid] += s.amount
       if (playerScores[s.fromOpenid] !== undefined) playerScores[s.fromOpenid] -= s.amount
     })
 
-    const rankedPlayers = room.players.map(p => ({
+    const rankedPlayers = allPlayers.map(p => ({
       openid: p.openid,
       nickname: p.nickname,
       avatarUrl: p.avatarUrl,
@@ -42,7 +45,7 @@ exports.main = async (event, context) => {
     const history = {
       roomId,
       roomName: room.name,
-      playerCount: room.players.length,
+      playerCount: allPlayers.length,
       roundCount: room.currentRound,
       totalScores: scores.length,
       players: rankedPlayers,

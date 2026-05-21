@@ -30,20 +30,21 @@ exports.main = async (event, context) => {
           // 保存历史记录 + 更新用户统计
           const scoresForHistory = await db.collection('scores').where({ roomId: room._id }).get()
           const scoresData = scoresForHistory.data
+          const allPlayers = room.allPlayers || room.players
           const playerScores = {}
-          room.players.forEach(p => { playerScores[p.openid] = 0 })
+          allPlayers.forEach(p => { playerScores[p.openid] = 0 })
           scoresData.forEach(s => {
             if (playerScores[s.toOpenid] !== undefined) playerScores[s.toOpenid] += s.amount
             if (playerScores[s.fromOpenid] !== undefined) playerScores[s.fromOpenid] -= s.amount
           })
-          const rankedPlayers = room.players.map(p => ({
+          const rankedPlayers = allPlayers.map(p => ({
             openid: p.openid, nickname: p.nickname, avatarUrl: p.avatarUrl,
             finalScore: playerScores[p.openid] || 0, rank: 0
           })).sort((a, b) => b.finalScore - a.finalScore)
           rankedPlayers.forEach((p, i) => { p.rank = i + 1 })
           await db.collection('history').add({
             data: {
-              roomId: room._id, roomName: room.name, playerCount: room.players.length,
+              roomId: room._id, roomName: room.name, playerCount: allPlayers.length,
               roundCount: room.currentRound, totalScores: scoresData.length,
               players: rankedPlayers,
               createdAt: room.createdAt, dissolvedAt: db.serverDate()
@@ -67,7 +68,8 @@ exports.main = async (event, context) => {
           activeRoom = {
             _id: room._id,
             name: room.name,
-            playerCount: room.players.length
+            playerCount: room.players.length,
+            createdAt: room.createdAt
           }
         }
       }

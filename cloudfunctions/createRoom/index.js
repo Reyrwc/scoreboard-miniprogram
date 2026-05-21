@@ -33,15 +33,17 @@ exports.main = async (event, context) => {
     const roomName = roomNames[Math.floor(Math.random() * roomNames.length)] + suffix
 
     // 创建房间
+    const creator = {
+      openid: OPENID,
+      nickname: user.nickname || '玩家',
+      avatarUrl: user.avatarUrl || '',
+      joinedAt: new Date()
+    }
     const room = {
       name: roomName,
       ownerId: OPENID,
-      players: [{
-        openid: OPENID,
-        nickname: user.nickname || '玩家',
-        avatarUrl: user.avatarUrl || '',
-        joinedAt: new Date()
-      }],
+      players: [creator],
+      allPlayers: [creator],
       currentRound: 0,
       lastNextRoundTime: null,
       status: 'active',

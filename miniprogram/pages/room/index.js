@@ -255,6 +255,28 @@ Page({
     }
   },
 
+  onMenuLeave() {
+    this.setData({ showMenu: false })
+    wx.showModal({
+      title: '确认退出',
+      content: '退出后可重新加入，确定退出房间？',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            wx.showLoading({ title: '退出中...' })
+            await api.leaveRoom({ roomId: this.data.roomId })
+            wx.showToast({ title: '已退出房间', icon: 'success' })
+            setTimeout(() => wx.navigateBack(), 1500)
+          } catch (err) {
+            wx.showToast({ title: err.message || '退出失败', icon: 'none' })
+          } finally {
+            wx.hideLoading()
+          }
+        }
+      }
+    })
+  },
+
   onMenuDissolve() {
     this.setData({ showMenu: false })
     wx.showModal({

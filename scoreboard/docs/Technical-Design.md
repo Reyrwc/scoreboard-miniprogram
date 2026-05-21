@@ -12,7 +12,7 @@
 | 实时记分 | 点击头像加分，记分人自动扣分 |
 | 下一局 | 记录局数，至少 1 条记录才能点，1分钟防重复 |
 | 实时排名 | 按积分排序，实时刷新 |
-| 解散房间 | 房主可解散，30 分钟无操作自动解散 |
+| 解散房间 | 房主可解散，2 分钟无记分自动解散 |
 | 结算报告 | 解散后生成最终排名 |
 
 ### 1.2 次要功能（P1 - 应该有）
@@ -100,8 +100,8 @@
 {
   _id: "room_abc123",               // 房间 ID (自动生成)
   name: "快乐老家AB12",             // 房间名称（随机名+4位码）
-  ownerId: "openid_owner",          // 房主 openid
-  players: [                        // 玩家列表
+  ownerId: "openid_owner",          // 房主 openid（退出后为空字符串）
+  players: [                        // 当前在房间内的玩家列表
     {
       openid: "openid_1",
       nickname: "张三",
@@ -114,6 +114,9 @@
       avatarUrl: "https://...",
       joinedAt: "2026-05-17T10:01:00"
     }
+  ],
+  allPlayers: [                     // 所有加入过的玩家（含已退出），结构同 players
+    // ... 用于解散时生成完整历史战绩
   ],
   currentRound: 0,                  // 当前局数（0 表示还未开始）
   lastNextRoundTime: null,          // 最后点击"下一局"的时间（用于1分钟防重复）
@@ -299,9 +302,9 @@
 ```
 
 **逻辑：**
-1. 如果是房主，转移房主给下一个玩家
-2. 如果是最后一个玩家，解散房间
-3. 从玩家列表移除
+1. 从 `players` 列表移除
+2. 如果是房主，清空 `ownerId`（不转移）
+3. 如果是最后一个玩家，解散房间并保存历史
 
 #### dissolveRoom - 解散房间
 ```javascript
@@ -318,8 +321,8 @@
 ```
 
 **逻辑：**
-1. 只有房主可以解散
-2. 生成历史记录
+1. 只有房主可以解散（`ownerId` 为空时任何人都可解散）
+2. 使用 `allPlayers`（含已退出玩家）生成历史记录
 3. 更新房间状态为 dissolved
 4. 更新所有玩家的统计数据
 
@@ -364,7 +367,7 @@
 { success: true, currentRound: 5 }
 
 // 失败（1分钟内重复点击）：
-{ success: false, message: "已有人点击，一分钟后再试" }
+{ success: false, message: "冷却中" }
 
 // 失败（房间无记分记录）：
 { success: false, message: "请先记分再开始下一局" }
@@ -392,9 +395,9 @@ exports.main = async (event, context) => {
   if (lastNextRoundTime) {
     const diff = Date.now() - new Date(lastNextRoundTime).getTime()
     if (diff < 60000) {
-      return { 
-        success: false, 
-        message: '已有人点击，一分钟后再试' 
+      return {
+        success: false,
+        message: '冷却中'
       }
     }
   }
@@ -743,9 +746,10 @@ Page({
 
 ### 7.4 自动解散
 - 云开发没有定时器（cron）
-- 实现方式：每次查询房间信息时检查 `lastScoreAt`（无记录则用 `createdAt`），超过 2 分钟标记为 dissolved
-- 自动解散时同步写入 `history` 集合并更新用户统计
-- 客户端 `_startExpireTimer` 也基于 `lastScoreAt || createdAt` 倒计时，每次记分后重置
+- 实现方式：客户端 `_startExpireTimer` 基于 `lastScoreAt || createdAt` 倒计时，到期后调用 `loadRoom()` → `getRoomInfo` 触发解散检查
+- `getRoomInfo` 和 `getUserInfo` 查询时检查 `lastScoreAt`（无记录则用 `createdAt`），超过 2 分钟标记为 dissolved
+- 自动解散时使用 `allPlayers`（含已退出玩家）写入 `history` 集合并更新用户统计
+- 每次记分后客户端重置 `_startExpireTimer`
 - 用户尝试操作已解散房间时，提示"房间已解散"
 
 ### 7.5 云开发免费额度
@@ -763,6 +767,6 @@ Page({
 
 ---
 
-*文档版本：v1.4*
+*文档版本：v1.5*
 *创建日期：2026-05-19*
 *更新日期：2026-05-21*

@@ -42,14 +42,16 @@ exports.main = async (event, context) => {
     const user = userRes.data
 
     // 加入房间
+    const playerData = {
+      openid: OPENID,
+      nickname: user.nickname || '玩家',
+      avatarUrl: user.avatarUrl || '',
+      joinedAt: new Date()
+    }
     await db.collection('rooms').doc(roomId).update({
       data: {
-        players: _.push({
-          openid: OPENID,
-          nickname: user.nickname || '玩家',
-          avatarUrl: user.avatarUrl || '',
-          joinedAt: new Date()
-        })
+        players: _.push(playerData),
+        allPlayers: _.push(playerData)
       }
     })
 
