@@ -2,7 +2,8 @@ const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 const _ = db.command
-const { ROOM_EXPIRE_MS } = require('./config')
+// 房间无记分自动解散时间（毫秒）— 与其他云函数保持一致
+const ROOM_EXPIRE_MS = 10 * 60 * 1000
 
 // 解散房间并写入历史记录（仅调用方抢到锁后才执行）
 async function dissolveWithHistory(room) {

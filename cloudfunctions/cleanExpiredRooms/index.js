@@ -2,7 +2,8 @@ const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 const _ = db.command
-const { ROOM_EXPIRE_MS } = require('./config')
+// 房间无记分自动解散时间（毫秒）— 与其他云函数保持一致
+const ROOM_EXPIRE_MS = 10 * 60 * 1000
 
 // 定时清理过期房间（每分钟触发一次）
 // 解决：用户退出小程序后房间永远不会被解散的问题（10分钟无记分自动解散）
