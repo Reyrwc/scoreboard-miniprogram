@@ -2,14 +2,15 @@ const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 const _ = db.command
+const { ROOM_EXPIRE_MS } = require('./config')
 
 // 定时清理过期房间（每分钟触发一次）
-// 解决：用户退出小程序后房间永远不会被解散的问题
+// 解决：用户退出小程序后房间永远不会被解散的问题（10分钟无记分自动解散）
 exports.main = async (event, context) => {
   try {
-    const cutoff = new Date(Date.now() - 2 * 60 * 1000)
+    const cutoff = new Date(Date.now() - ROOM_EXPIRE_MS)
 
-    // 查找所有 active 且超过 2 分钟无记分的房间
+    // 查找所有 active 且超过 10 分钟无记分的房间
     // 用 createdAt 筛选：房间创建超过 2 分钟的才需要检查
     // 函数内部再根据 lastScoreAt 判断是否真正过期
     const { data: rooms } = await db.collection('rooms')
@@ -31,7 +32,7 @@ exports.main = async (event, context) => {
         const lastScore = refTime instanceof Date
           ? refTime.getTime()
           : new Date(refTime).getTime()
-        if (lastScore && !isNaN(lastScore) && Date.now() - lastScore <= 2 * 60 * 1000) {
+        if (lastScore && !isNaN(lastScore) && Date.now() - lastScore <= ROOM_EXPIRE_MS) {
           continue // 最近有记分活动，跳过
         }
         // 原子抢锁：将 status 从 active 改为 dissolved

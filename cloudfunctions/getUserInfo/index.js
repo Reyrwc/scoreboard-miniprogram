@@ -2,6 +2,7 @@ const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 const _ = db.command
+const { ROOM_EXPIRE_MS } = require('./config')
 
 // 解散房间并写入历史记录（仅调用方抢到锁后才执行）
 async function dissolveWithHistory(room) {
@@ -70,12 +71,12 @@ exports.main = async (event, context) => {
 
       if (roomRes.data && roomRes.data.length > 0) {
         const room = roomRes.data[0]
-        // 检查是否已过期（2分钟无记分）
+        // 检查是否已过期（10分钟无记分）
         const refTime = room.lastScoreAt || room.createdAt
         const lastScore = refTime instanceof Date
           ? refTime.getTime()
           : new Date(refTime).getTime()
-        if (!lastScore || isNaN(lastScore) || Date.now() - lastScore > 2 * 60 * 1000) {
+        if (!lastScore || isNaN(lastScore) || Date.now() - lastScore > ROOM_EXPIRE_MS) {
           // 原子抢锁：只有第一个成功的调用才写 history
           if (await tryClaimDissolve(room._id)) {
             await dissolveWithHistory(room)
@@ -106,7 +107,7 @@ exports.main = async (event, context) => {
             const lastScore = refTime instanceof Date
               ? refTime.getTime()
               : new Date(refTime).getTime()
-            if (!lastScore || isNaN(lastScore) || Date.now() - lastScore > 2 * 60 * 1000) {
+            if (!lastScore || isNaN(lastScore) || Date.now() - lastScore > ROOM_EXPIRE_MS) {
               // 原子抢锁：只有第一个成功的调用才写 history
               if (await tryClaimDissolve(room._id)) {
                 await dissolveWithHistory(room)

@@ -1,5 +1,6 @@
 const api = require('../../utils/api')
 const icons = require('../../utils/icons')
+const { ROOM_EXPIRE_MS } = require('../../utils/config')
 const app = getApp()
 
 Page({
@@ -354,7 +355,7 @@ Page({
       ? refTime.getTime()
       : new Date(refTime).getTime()
     if (!lastScore || isNaN(lastScore)) return
-    const remain = 2 * 60 * 1000 - (Date.now() - lastScore)
+    const remain = ROOM_EXPIRE_MS - (Date.now() - lastScore)
 
     if (remain <= 0) {
       // 已过期，触发解散检查

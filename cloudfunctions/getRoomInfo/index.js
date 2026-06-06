@@ -1,6 +1,7 @@
 const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
+const { ROOM_EXPIRE_MS } = require('./config')
 
 exports.main = async (event, context) => {
   const { roomId } = event
@@ -9,14 +10,14 @@ exports.main = async (event, context) => {
     const roomRes = await db.collection('rooms').doc(roomId).get()
     const room = roomRes.data
 
-    // 检查自动解散 (2分钟无记分)
+    // 检查自动解散 (10分钟无记分)
     if (room.status === 'active') {
       const refTime = room.lastScoreAt || room.createdAt
       const lastScore = refTime instanceof Date
         ? refTime.getTime()
         : new Date(refTime).getTime()
       const now = Date.now()
-      if (!lastScore || isNaN(lastScore) || now - lastScore > 2 * 60 * 1000) {
+      if (!lastScore || isNaN(lastScore) || now - lastScore > ROOM_EXPIRE_MS) {
         // 原子抢锁：只有第一个成功的调用才写 history
         const claimRes = await db.collection('rooms').where({
           _id: roomId, status: 'active'

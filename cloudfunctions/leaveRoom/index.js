@@ -2,6 +2,7 @@ const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 const _ = db.command
+const { ROOM_EXPIRE_MS } = require('./config')
 
 async function dissolveWithHistory(room, roomId) {
   const scoresRes = await db.collection('scores').where({ roomId }).get()
@@ -84,10 +85,10 @@ exports.main = async (event, context) => {
       return { code: 0 }
     }
 
-    // 还有玩家在房间，检查是否已过期（2分钟无记分）
+    // 还有玩家在房间，检查是否已过期（10分钟无记分）
     const refTime = room.lastScoreAt || room.createdAt
     const lastScore = refTime instanceof Date ? refTime.getTime() : new Date(refTime).getTime()
-    if (lastScore && !isNaN(lastScore) && Date.now() - lastScore > 2 * 60 * 1000) {
+    if (lastScore && !isNaN(lastScore) && Date.now() - lastScore > ROOM_EXPIRE_MS) {
       if (await tryClaimDissolve()) {
         await dissolveWithHistory(room, roomId)
       }
