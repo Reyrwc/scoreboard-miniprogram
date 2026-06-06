@@ -45,16 +45,15 @@ Component({
 
       const count = this.data.diceCount
       const results = Array.from({ length: count }, () => Math.floor(Math.random() * 6) + 1)
+      // 固定 5 圈 (1800°) + 各面精确角度，确保停在正对位置
       const finalTransforms = results.map(v => {
-        const spinX = 720 + Math.floor(Math.random() * 360)
-        const spinY = 720 + Math.floor(Math.random() * 360)
         switch (v) {
-          case 1: return `rotateX(${spinX}deg) rotateY(${spinY}deg)`
-          case 2: return `rotateX(${spinX}deg) rotateY(${-90 + spinY}deg)`
-          case 3: return `rotateX(${-90 + spinX}deg) rotateY(${spinY}deg)`
-          case 4: return `rotateX(${90 + spinX}deg) rotateY(${spinY}deg)`
-          case 5: return `rotateX(${spinX}deg) rotateY(${90 + spinY}deg)`
-          case 6: return `rotateX(${spinX}deg) rotateY(${180 + spinY}deg)`
+          case 1: return 'rotateX(1800deg) rotateY(1800deg)'
+          case 2: return 'rotateX(1800deg) rotateY(1710deg)'
+          case 3: return 'rotateX(1710deg) rotateY(1800deg)'
+          case 4: return 'rotateX(1890deg) rotateY(1800deg)'
+          case 5: return 'rotateX(1800deg) rotateY(1890deg)'
+          case 6: return 'rotateX(1800deg) rotateY(1980deg)'
         }
       })
 
