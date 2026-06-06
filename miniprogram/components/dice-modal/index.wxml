@@ -14,20 +14,51 @@
       >{{item}}</view>
     </view>
 
-    <!-- 骰子结果展示 -->
+    <!-- 3D 骰子结果展示 -->
     <view class="dice-result-area">
-      <view
-        class="die {{rolling ? 'rolling' : ''}}"
-        wx:for="{{diceResults}}"
-        wx:key="index"
-      >
-        <view class="die-face die-{{item}}">
-          <view class="dot" wx:if="{{item >= 1}}"></view>
-          <view class="dot" wx:if="{{item >= 2}}"></view>
-          <view class="dot" wx:if="{{item >= 3}}"></view>
-          <view class="dot" wx:if="{{item >= 4}}"></view>
-          <view class="dot" wx:if="{{item >= 5}}"></view>
-          <view class="dot" wx:if="{{item >= 6}}"></view>
+      <view class="die-3d-wrap" wx:for="{{diceResults}}" wx:key="index">
+        <view class="dice-scene">
+          <view class="dice-cube" style="transform: {{diceTransforms[index] || 'rotateX(0deg) rotateY(0deg)'}}">
+            <!-- 面1: front -->
+            <view class="cube-face cube-front die-1">
+              <view class="dot"></view>
+            </view>
+            <!-- 面2: right -->
+            <view class="cube-face cube-right die-2">
+              <view class="dot"></view>
+              <view class="dot"></view>
+            </view>
+            <!-- 面3: top -->
+            <view class="cube-face cube-top die-3">
+              <view class="dot"></view>
+              <view class="dot"></view>
+              <view class="dot"></view>
+            </view>
+            <!-- 面4: bottom -->
+            <view class="cube-face cube-bottom die-4">
+              <view class="dot"></view>
+              <view class="dot"></view>
+              <view class="dot"></view>
+              <view class="dot"></view>
+            </view>
+            <!-- 面5: left -->
+            <view class="cube-face cube-left die-5">
+              <view class="dot"></view>
+              <view class="dot"></view>
+              <view class="dot"></view>
+              <view class="dot"></view>
+              <view class="dot"></view>
+            </view>
+            <!-- 面6: back -->
+            <view class="cube-face cube-back die-6">
+              <view class="dot"></view>
+              <view class="dot"></view>
+              <view class="dot"></view>
+              <view class="dot"></view>
+              <view class="dot"></view>
+              <view class="dot"></view>
+            </view>
+          </view>
         </view>
       </view>
     </view>

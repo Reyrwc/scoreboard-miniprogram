@@ -65,29 +65,36 @@
 /* 骰子结果区域 */
 .dice-result-area {
   display: flex;
-  gap: 16rpx;
+  gap: 24rpx;
   justify-content: center;
   flex-wrap: wrap;
   margin-bottom: 32rpx;
   min-height: 120rpx;
 }
 
-/* 单个骰子 */
-.die {
+/* 3D 骰子容器 */
+.die-3d-wrap {
   width: 100rpx;
   height: 100rpx;
 }
-.die.rolling {
-  animation: shake 0.1s ease-in-out infinite alternate;
-}
-@keyframes shake {
-  0% { transform: rotate(-15deg) scale(1.05); }
-  100% { transform: rotate(15deg) scale(1.05); }
-}
-
-.die-face {
+.dice-scene {
   width: 100%;
   height: 100%;
+  perspective: 400rpx;
+}
+.dice-cube {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 骰子各面 */
+.cube-face {
+  position: absolute;
+  width: 100rpx;
+  height: 100rpx;
   background: linear-gradient(135deg, #f8f8f8, #e8e8e8);
   border-radius: 16rpx;
   box-shadow: 0 4rpx 8rpx rgba(0,0,0,0.1);
@@ -95,14 +102,24 @@
   padding: 16rpx;
   box-sizing: border-box;
 }
+
+/* 面定位 */
+.cube-front  { transform: rotateY(0deg) translateZ(50rpx); }
+.cube-back   { transform: rotateY(180deg) translateZ(50rpx); }
+.cube-right  { transform: rotateY(90deg) translateZ(50rpx); }
+.cube-left   { transform: rotateY(-90deg) translateZ(50rpx); }
+.cube-top    { transform: rotateX(90deg) translateZ(50rpx); }
+.cube-bottom { transform: rotateX(-90deg) translateZ(50rpx); }
+
+/* 圆点 */
 .dot {
   width: 16rpx;
   height: 16rpx;
   background: #1a5cff;
   border-radius: 50%;
 }
-.die-1 .dot,
-.die-4 .dot {
+.cube-face.die-1 .dot,
+.cube-face.die-4 .dot {
   background: #e53e3e;
 }
 
