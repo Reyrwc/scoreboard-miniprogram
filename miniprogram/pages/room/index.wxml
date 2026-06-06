@@ -59,11 +59,11 @@
       <view class="invite-modal-close" bindtap="onCloseInviteModal">×</view>
       <view class="invite-modal-title">邀请好友加入</view>
       <view class="invite-room-name">{{room.name}}</view>
-      <image class="invite-qrcode" wx:if="{{qrcodeUrl}}" src="{{qrcodeUrl}}" mode="aspectFit"/>
-      <view class="invite-qrcode-fallback" wx:else>
-        <view class="invite-room-id-label">房间名</view>
-        <view class="invite-room-id">{{room.name}}</view>
-        <view class="invite-room-id-hint">转发给好友即可加入</view>
+      <view class="invite-qrcode-wrap">
+        <image class="invite-qrcode" wx:if="{{qrcodeUrl}}" src="{{qrcodeUrl}}" mode="aspectFit"/>
+        <view class="invite-qrcode-loading" wx:else>
+          <text>加载中...</text>
+        </view>
       </view>
       <button class="btn-share" open-type="share">
         <image class="share-icon" src="{{icons.shareWhite}}"/>

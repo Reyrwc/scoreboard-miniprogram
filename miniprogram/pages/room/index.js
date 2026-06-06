@@ -252,8 +252,7 @@ Page({
       }
     } catch (err) {
       console.error('生成二维码失败:', err)
-      // 使用备用方案：显示房间ID
-      this.setData({ qrcodeUrl: '' })
+      wx.showToast({ title: '二维码加载失败，请重试', icon: 'none' })
     }
   },
 
