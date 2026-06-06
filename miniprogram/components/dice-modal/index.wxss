@@ -60,7 +60,7 @@
 }
 .dice-count-btn.active {
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 
 /* 骰子结果区域 */
@@ -125,7 +125,7 @@
 .dice-roll-btn {
   width: 100%;
   background: var(--color-primary);
-  color: #fff;
+  color: var(--color-text-inverse);
   border: none;
   border-radius: var(--radius-md);
   padding: 24rpx;
