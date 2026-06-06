@@ -18,7 +18,7 @@
     <view class="dice-result-area">
       <view class="die-3d-wrap" wx:for="{{diceResults}}" wx:key="index">
         <view class="dice-scene">
-          <view class="dice-cube" style="transform: {{diceTransforms[index] || 'rotateX(0deg) rotateY(0deg)'}}">
+          <view class="dice-cube {{noTransition ? 'no-transition' : ''}}" style="transform: {{diceTransforms[index] || 'rotateX(0deg) rotateY(0deg)'}}">
             <!-- 面1: front -->
             <view class="cube-face cube-front die-1">
               <view class="dot"></view>

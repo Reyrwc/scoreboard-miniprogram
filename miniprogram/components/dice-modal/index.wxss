@@ -89,6 +89,7 @@
   transform-style: preserve-3d;
   transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1);
 }
+.dice-cube.no-transition { transition: none; }
 
 /* 骰子各面 */
 .cube-face {
