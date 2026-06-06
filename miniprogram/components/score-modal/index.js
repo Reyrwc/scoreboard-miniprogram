@@ -5,8 +5,7 @@ Component({
   },
   data: {
     scoreValue: '',
-    noteValue: '',
-    quickScores: [1, 3, 5, 10, 20, 50, 100, 200]
+    noteValue: ''
   },
   methods: {
     onScoreInput(e) {
@@ -14,9 +13,6 @@ Component({
     },
     onNoteInput(e) {
       this.setData({ noteValue: e.detail.value })
-    },
-    onQuickScore(e) {
-      this.setData({ scoreValue: String(e.currentTarget.dataset.value) })
     },
     onClose() {
       this.setData({ scoreValue: '', noteValue: '' })
