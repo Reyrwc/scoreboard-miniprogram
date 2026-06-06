@@ -16,7 +16,8 @@ Component({
     diceCount: 1,
     diceResults: [1],
     diceTransforms: ['rotateX(0deg) rotateY(0deg)'],
-    rolling: false
+    rolling: false,
+    noTransition: false
   },
   lifetimes: {
     created() {
@@ -39,11 +40,17 @@ Component({
       if (this.data.rolling) return
       const count = parseInt(e.currentTarget.dataset.count, 10)
       const results = Array.from({ length: count }, () => 1)
-      // 重置基础角度，不触发过渡动画
       this._baseRotX = 0
       this._baseRotY = 0
       const transforms = Array.from({ length: count }, () => 'rotateX(0deg) rotateY(0deg)')
-      this.setData({ diceCount: count, diceResults: results, diceTransforms: transforms })
+      // 先禁用过渡，再重置角度，避免骰子从当前点数回 1 时播放动画
+      this.setData({ noTransition: true })
+      setTimeout(() => {
+        this.setData({ diceCount: count, diceResults: results, diceTransforms: transforms })
+        setTimeout(() => {
+          this.setData({ noTransition: false })
+        }, 50)
+      }, 50)
     },
 
     onRoll() {
