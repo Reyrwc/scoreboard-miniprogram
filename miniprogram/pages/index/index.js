@@ -12,7 +12,8 @@ Page({
     icons: {
       circlePlusWhite: icons.circlePlusWhite,
       qrScan: icons.qrScan
-    }
+    },
+    showDiceModal: false
   },
 
   onLoad() {
@@ -107,6 +108,14 @@ Page({
       return
     }
     wx.navigateTo({ url: '/pages/room/index?create=true' })
+  },
+
+  onShowDice() {
+    this.setData({ showDiceModal: true })
+  },
+
+  onCloseDice() {
+    this.setData({ showDiceModal: false })
   },
 
   onScanCode() {

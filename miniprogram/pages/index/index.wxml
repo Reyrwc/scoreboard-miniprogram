@@ -36,6 +36,11 @@
     </button>
   </view>
 
+  <!-- 摇骰子按钮 -->
+  <view class="dice-btn-wrap">
+    <button class="btn btn-dice" bindtap="onShowDice">🎲 摇骰子</button>
+  </view>
+
   <view class="active-room-card" wx:if="{{activeRoom}}" bindtap="onEnterRoom">
     <view class="active-room-info">
       <view class="active-room-name">{{activeRoom.name}}</view>
@@ -43,4 +48,6 @@
     </view>
     <view class="active-room-arrow">></view>
   </view>
+
+  <dice-modal visible="{{showDiceModal}}" bind:close="onCloseDice" />
 </view>

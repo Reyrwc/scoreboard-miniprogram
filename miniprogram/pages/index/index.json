@@ -1,5 +1,7 @@
 {
   "navigationBarTitleText": "记分板",
   "enablePullDownRefresh": true,
-  "usingComponents": {}
+  "usingComponents": {
+    "dice-modal": "/components/dice-modal/index"
+  }
 }

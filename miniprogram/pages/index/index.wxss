@@ -89,3 +89,19 @@
   height: 44rpx;
   margin-right: 12rpx;
 }
+.dice-btn-wrap {
+  padding: 24rpx 32rpx 0;
+}
+.btn-dice {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  border: 2rpx solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 24rpx;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-semibold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-dice::after { border: none; }
