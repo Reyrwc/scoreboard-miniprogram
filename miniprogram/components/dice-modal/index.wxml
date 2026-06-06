@@ -1,0 +1,38 @@
+<view class="dice-overlay {{visible ? 'active' : ''}}" bindtap="onClose">
+  <view class="dice-sheet" catchtap>
+    <view class="dice-close" bindtap="onClose">×</view>
+    <view class="dice-title">摇骰子</view>
+
+    <!-- 数量选择 -->
+    <view class="dice-count-row">
+      <view
+        class="dice-count-btn {{diceCount === item ? 'active' : ''}}"
+        wx:for="{{[1,2,3,4,5]}}"
+        wx:key="*this"
+        bindtap="onSelectCount"
+        data-count="{{item}}"
+      >{{item}}</view>
+    </view>
+
+    <!-- 骰子结果展示 -->
+    <view class="dice-result-area">
+      <view
+        class="die {{rolling ? 'rolling' : ''}}"
+        wx:for="{{diceResults}}"
+        wx:key="index"
+      >
+        <view class="die-face die-{{item}}">
+          <view class="dot" wx:if="{{item >= 1}}"></view>
+          <view class="dot" wx:if="{{item >= 2}}"></view>
+          <view class="dot" wx:if="{{item >= 3}}"></view>
+          <view class="dot" wx:if="{{item >= 4}}"></view>
+          <view class="dot" wx:if="{{item >= 5}}"></view>
+          <view class="dot" wx:if="{{item >= 6}}"></view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 投掷按钮 -->
+    <button class="dice-roll-btn" bindtap="onRoll" disabled="{{rolling}}">投掷</button>
+  </view>
+</view>
