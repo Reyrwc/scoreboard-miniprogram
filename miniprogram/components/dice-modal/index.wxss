@@ -5,7 +5,6 @@
   background: rgba(0,0,0,0.4);
   z-index: 100;
   align-items: center;
-  padding-bottom: 30vh;
   justify-content: center;
 }
 .dice-overlay.active { display: flex; }
@@ -99,8 +98,12 @@
 .dot {
   width: 16rpx;
   height: 16rpx;
-  background: var(--color-text-primary);
+  background: #1a5cff;
   border-radius: 50%;
+}
+.die-1 .dot,
+.die-4 .dot {
+  background: #e53e3e;
 }
 
 /* 骰子点数布局 */
