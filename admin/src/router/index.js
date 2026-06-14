@@ -6,17 +6,10 @@ import Rooms from '../views/Rooms.vue'
 
 const routes = [
   { path: '/login', name: 'Login', component: Login },
-  {
-    path: '/',
-    component: { template: '<router-view />' },
-    meta: { requiresAuth: true },
-    children: [
-      { path: '', redirect: '/dashboard' },
-      { path: 'dashboard', name: 'Dashboard', component: Dashboard },
-      { path: 'users', name: 'Users', component: Users },
-      { path: 'rooms', name: 'Rooms', component: Rooms }
-    ]
-  }
+  { path: '/', redirect: '/dashboard' },
+  { path: '/dashboard', name: 'Dashboard', component: Dashboard, meta: { requiresAuth: true } },
+  { path: '/users', name: 'Users', component: Users, meta: { requiresAuth: true } },
+  { path: '/rooms', name: 'Rooms', component: Rooms, meta: { requiresAuth: true } }
 ]
 
 const router = createRouter({
