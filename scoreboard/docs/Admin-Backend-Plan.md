@@ -1687,7 +1687,7 @@ git commit -m "feat(admin): 添加环境变量配置，验证构建"
    - 用 Node.js 本地生成 bcryptjs 哈希密码：
      ```js
      const bcrypt = require('bcryptjs')
-     console.log(bcrypt.hashSync('你的密码', 10))
+     console.log(bcrypt.hashSync('你的密码  ', 10))
      ```
    - 在 `admins` 集合中插入文档：
      ```json
