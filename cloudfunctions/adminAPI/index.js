@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
 const _ = db.command
+const $ = db.command.aggregate
 
 const JWT_SECRET = process.env.JWT_SECRET || 'scoreboard-admin-secret-dev'
 
@@ -39,6 +40,18 @@ async function getDashboard() {
     lastScoreAt: _.gte(today)
   }).count()
 
+  // 今日记分次数
+  const todayScoresCount = await db.collection('scores').where({
+    createdAt: _.gte(today)
+  }).count()
+
+  // 今日活跃人数（去重 fromOpenid，用聚合）
+  const activeUsersAgg = await db.collection('scores').aggregate()
+    .match({ createdAt: _.gte(today) })
+    .group({ _id: '$fromOpenid' })
+    .end()
+  const todayActiveUsers = activeUsersAgg.list.length
+
   // 近 30 天用户增长趋势
   const thirtyDaysAgo = new Date(today)
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
@@ -56,12 +69,44 @@ async function getDashboard() {
 
   const roomTrend = aggregateByDate(allRooms.data, thirtyDaysAgo, today)
 
+  // 近 30 天活跃时间段热力图（按星期 × 小时聚合，服务端计算）
+  const heatmapAgg = await db.collection('scores').aggregate()
+    .match({ createdAt: _.gte(thirtyDaysAgo) })
+    .project({
+      hour: $.add([$.hour('$createdAt'), 8]),   // UTC+8
+      day: $.add([$.dayOfWeek('$createdAt'), 1]) // 调整星期
+    })
+    .project({
+      hour: $.mod(['$hour', 24]),
+      day: $.mod(['$day', 7])
+    })
+    .group({
+      _id: { day: '$day', hour: '$hour' },
+      count: $.sum(1)
+    })
+    .end()
+
+  // 转为 ECharts 热力图格式 [hour, day, count]
+  const heatmapMap = {}
+  heatmapAgg.list.forEach(r => {
+    heatmapMap[`${r._id.day}_${r._id.hour}`] = r.count
+  })
+  const hourlyHeatmap = []
+  for (let day = 0; day < 7; day++) {
+    for (let hour = 0; hour < 24; hour++) {
+      hourlyHeatmap.push([hour, day, heatmapMap[`${day}_${hour}`] || 0])
+    }
+  }
+
   return ok({
     totalUsers: usersCount.total,
     totalRooms: roomsCount.total,
     todayActiveRooms: todayActive.total,
+    todayActiveUsers,
+    todayScoreCount: todayScoresCount.total,
     userTrend,
-    roomTrend
+    roomTrend,
+    hourlyHeatmap
   })
 }
 
