@@ -1,0 +1,12 @@
+{
+  "triggers": [
+    {
+      "name": "http-trigger",
+      "type": "http",
+      "config": {
+        "method": "POST",
+        "path": "/adminAPI"
+      }
+    }
+  ]
+}
