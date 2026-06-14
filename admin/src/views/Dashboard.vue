@@ -46,12 +46,18 @@
       </el-col>
     </el-row>
 
-    <!-- 活跃时间段热力图 -->
+    <!-- 活跃时间段 -->
     <el-row :gutter="20" style="margin-bottom: 20px">
-      <el-col :span="24">
+      <el-col :span="12">
         <el-card>
-          <template #header>活跃时间段（近 30 天）</template>
-          <div ref="heatmapRef" style="height: 260px"></div>
+          <template #header>每小时活跃分布（近 30 天）</template>
+          <div ref="hourlyChartRef" style="height: 260px"></div>
+        </el-card>
+      </el-col>
+      <el-col :span="12">
+        <el-card>
+          <template #header>每周活跃分布（近 30 天）</template>
+          <div ref="dailyChartRef" style="height: 260px"></div>
         </el-card>
       </el-col>
     </el-row>
@@ -88,18 +94,20 @@ const stats = reactive({
   todayScoreCount: 0,
   userTrend: [],
   roomTrend: [],
-  hourlyHeatmap: []
+  hourlyActivity: [],
+  dailyActivity: []
 })
 
 const userChartRef = ref()
 const roomChartRef = ref()
-const heatmapRef = ref()
+const hourlyChartRef = ref()
+const dailyChartRef = ref()
 let userChart = null
 let roomChart = null
-let heatmapChart = null
+let hourlyChart = null
+let dailyChart = null
 
 const DAYS = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
-const HOURS = Array.from({ length: 24 }, (_, i) => `${i}:00`)
 
 function renderChart(el, data, title) {
   const chart = echarts.init(el)
@@ -123,40 +131,22 @@ function renderChart(el, data, title) {
   return chart
 }
 
-function renderHeatmap(el, data) {
+function renderBarChart(el, categories, data, color) {
   const chart = echarts.init(el)
-  const maxVal = Math.max(...data.map(d => d[2]), 1)
-
   chart.setOption({
-    tooltip: {
-      formatter: ({ data: [hour, day, val] }) =>
-        `${DAYS[day]} ${hour}:00<br/>记分 <b>${val}</b> 次`
-    },
-    grid: { left: 50, right: 20, bottom: 30, top: 10 },
+    tooltip: { trigger: 'axis' },
+    grid: { left: 40, right: 20, bottom: 30, top: 10 },
     xAxis: {
       type: 'category',
-      data: HOURS,
-      axisLabel: { interval: 1 }
+      data: categories,
+      axisLabel: { interval: 0, rotate: categories.length > 12 ? 45 : 0 }
     },
-    yAxis: {
-      type: 'category',
-      data: DAYS
-    },
-    visualMap: {
-      min: 0,
-      max: maxVal,
-      calculable: true,
-      orient: 'horizontal',
-      left: 'center',
-      bottom: 0,
-      inRange: { color: ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'] }
-    },
+    yAxis: { type: 'value', minInterval: 1 },
     series: [{
-      type: 'heatmap',
+      type: 'bar',
       data,
-      emphasis: {
-        itemStyle: { shadowBlur: 6, shadowColor: 'rgba(0, 0, 0, 0.3)' }
-      }
+      itemStyle: { color, borderRadius: [4, 4, 0, 0] },
+      barMaxWidth: 24
     }]
   })
   return chart
@@ -167,9 +157,11 @@ onMounted(async () => {
     const data = await getDashboard()
     Object.assign(stats, data)
     await nextTick()
+    const hours = Array.from({ length: 24 }, (_, i) => `${i}:00`)
     userChart = renderChart(userChartRef.value, stats.userTrend, '新增用户')
     roomChart = renderChart(roomChartRef.value, stats.roomTrend, '新增房间')
-    heatmapChart = renderHeatmap(heatmapRef.value, stats.hourlyHeatmap)
+    hourlyChart = renderBarChart(hourlyChartRef.value, hours, stats.hourlyActivity, '#409eff')
+    dailyChart = renderBarChart(dailyChartRef.value, DAYS, stats.dailyActivity, '#67c23a')
 
     window.addEventListener('resize', handleResize)
   } catch (err) {
@@ -180,14 +172,16 @@ onMounted(async () => {
 function handleResize() {
   userChart?.resize()
   roomChart?.resize()
-  heatmapChart?.resize()
+  hourlyChart?.resize()
+  dailyChart?.resize()
 }
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
   userChart?.dispose()
   roomChart?.dispose()
-  heatmapChart?.dispose()
+  hourlyChart?.dispose()
+  dailyChart?.dispose()
 })
 </script>
 

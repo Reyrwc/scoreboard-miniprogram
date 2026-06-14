@@ -69,8 +69,8 @@ async function getDashboard() {
 
   const roomTrend = aggregateByDate(allRooms.data, thirtyDaysAgo, today)
 
-  // 近 30 天活跃时间段热力图（按星期 × 小时聚合，服务端计算）
-  const heatmapAgg = await db.collection('scores').aggregate()
+  // 近 30 天活跃时间段（按小时和按星期分别聚合）
+  const activityAgg = await db.collection('scores').aggregate()
     .match({ createdAt: _.gte(thirtyDaysAgo) })
     .project({
       hour: $.add([$.hour('$createdAt'), 8]),   // UTC+8
@@ -81,21 +81,19 @@ async function getDashboard() {
       day: $.mod(['$day', 7])
     })
     .group({
-      _id: { day: '$day', hour: '$hour' },
-      count: $.sum(1)
+      _id: null,
+      byHour: $.push('$hour'),
+      byDay: $.push('$day')
     })
     .end()
 
-  // 转为 ECharts 热力图格式 [hour, day, count]
-  const heatmapMap = {}
-  heatmapAgg.list.forEach(r => {
-    heatmapMap[`${r._id.day}_${r._id.hour}`] = r.count
-  })
-  const hourlyHeatmap = []
-  for (let day = 0; day < 7; day++) {
-    for (let hour = 0; hour < 24; hour++) {
-      hourlyHeatmap.push([hour, day, heatmapMap[`${day}_${hour}`] || 0])
-    }
+  // 按小时聚合（0-23 点）
+  const hourlyActivity = new Array(24).fill(0)
+  // 按星期聚合（0=周日 ... 6=周六）
+  const dailyActivity = new Array(7).fill(0)
+  if (activityAgg.list.length > 0) {
+    activityAgg.list[0].byHour.forEach(h => { hourlyActivity[h]++ })
+    activityAgg.list[0].byDay.forEach(d => { dailyActivity[d]++ })
   }
 
   return ok({
@@ -106,7 +104,8 @@ async function getDashboard() {
     todayScoreCount: todayScoresCount.total,
     userTrend,
     roomTrend,
-    hourlyHeatmap
+    hourlyActivity,
+    dailyActivity
   })
 }
 
