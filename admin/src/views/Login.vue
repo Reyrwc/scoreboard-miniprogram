@@ -1,32 +1,34 @@
 <template>
-  <div class="login-container">
-    <el-card class="login-card">
-      <template #header>
-        <div class="card-header">
-          <h2>记分板管理后台</h2>
-        </div>
-      </template>
+  <div class="login-page">
+    <el-card class="login-card" shadow="never">
+      <div class="login-header">
+        <el-avatar :size="56" style="background: #007aff; margin-bottom: 12px">
+          <el-icon :size="28"><Management /></el-icon>
+        </el-avatar>
+        <h2>记分板管理后台</h2>
+        <p class="login-subtitle">请使用管理员账号登录</p>
+      </div>
+
       <el-form
         ref="formRef"
         :model="form"
         :rules="rules"
-        label-width="0"
+        label-position="top"
         @submit.prevent="handleLogin"
       >
-        <el-form-item prop="username">
+        <el-form-item label="用户名" prop="username">
           <el-input
             v-model="form.username"
-            placeholder="用户名"
-            prefix-icon="User"
+            placeholder="请输入用户名"
             size="large"
+            clearable
           />
         </el-form-item>
-        <el-form-item prop="password">
+        <el-form-item label="密码" prop="password">
           <el-input
             v-model="form.password"
             type="password"
-            placeholder="密码"
-            prefix-icon="Lock"
+            placeholder="请输入密码"
             size="large"
             show-password
             @keyup.enter="handleLogin"
@@ -52,6 +54,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { Management } from '@element-plus/icons-vue'
 import { adminLogin } from '../api/admin.js'
 
 const router = useRouter()
@@ -87,25 +90,35 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-.login-container {
+.login-page {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #f2f2f7;
 }
 
 .login-card {
-  width: 400px;
+  width: 380px;
+  border: 1px solid #e5e5ea;
+  border-radius: 12px;
 }
 
-.card-header {
+.login-header {
   text-align: center;
+  margin-bottom: 24px;
 }
 
-.card-header h2 {
+.login-header h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1c1c1e;
+}
+
+.login-subtitle {
   margin: 0;
-  color: #303133;
-  font-size: 22px;
+  font-size: 13px;
+  color: #8e8e93;
 }
 </style>

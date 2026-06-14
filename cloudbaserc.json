@@ -1,0 +1,18 @@
+{
+  "envId": "cloud1-d2gi8awfvb18a2995",
+  "functionRoot": "cloudfunctions",
+  "functions": [
+    {
+      "name": "adminLogin",
+      "config": {
+        "installDependency": true
+      }
+    },
+    {
+      "name": "adminAPI",
+      "config": {
+        "installDependency": true
+      }
+    }
+  ]
+}

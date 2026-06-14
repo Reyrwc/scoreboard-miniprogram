@@ -4,7 +4,7 @@ const ENV_ID = import.meta.env.VITE_TCB_ENV_ID || ''
 
 const app = cloudbase.init({
   env: ENV_ID,
-  region: 'ap-shanghai' // 微信云开发默认区域
+  region: 'ap-shanghai'
 })
 
 let authPromise = null
@@ -12,24 +12,23 @@ let authPromise = null
 function ensureAuth() {
   if (!authPromise) {
     const auth = app.auth({ persistence: 'local' })
-    authPromise = auth.signInAnonymously()
-      .then(() => {
-        console.log('[CloudBase] 匿名登录成功')
-      })
-      .catch(err => {
-        console.error('[CloudBase] 匿名登录失败:', err)
-        authPromise = null
-        throw err
-      })
+    authPromise = auth.signInAnonymously().catch(err => {
+      authPromise = null
+      throw err
+    })
   }
   return authPromise
 }
 
+async function sha256(str) {
+  const data = new TextEncoder().encode(str)
+  const hash = await crypto.subtle.digest('SHA-256', data)
+  return Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('')
+}
+
 async function callFunction(name, data = {}) {
   await ensureAuth()
-  console.log(`[CloudBase] 调用 ${name}...`)
   const res = await app.callFunction({ name, data })
-  console.log(`[CloudBase] ${name} 返回:`, res)
   const result = res.result
   if (result.code !== undefined && result.code !== 0) {
     if (result.code === 401) {
@@ -43,8 +42,9 @@ async function callFunction(name, data = {}) {
   return result.data !== undefined ? result.data : result
 }
 
-export const adminLogin = (username, password) => {
-  return callFunction('adminLogin', { username, password })
+export const adminLogin = async (username, password) => {
+  const hashedPassword = await sha256(password)
+  return callFunction('adminLogin', { username, password: hashedPassword })
 }
 
 export const getDashboard = () => {
