@@ -23,3 +23,7 @@ project.private.config.json
 # Superpowers
 docs/superpowers/
 .superpowers/
+
+# Admin backend
+admin/node_modules/
+admin/dist/
