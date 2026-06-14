@@ -23,7 +23,11 @@ exports.main = async (event, context) => {
 
   try {
     const userRes = await db.collection('users').doc(OPENID).get()
-    return { code: 0, openid: OPENID, user: userRes.data }
+    const user = userRes.data
+    if (user.banned) {
+      return { code: 403, message: '账号已被封禁', data: { reason: user.bannedReason || '' } }
+    }
+    return { code: 0, openid: OPENID, user }
   } catch (err) {
     const randomAvatar = DEFAULT_AVATARS[Math.floor(Math.random() * DEFAULT_AVATARS.length)]
     const nickname = generateNickname()
@@ -38,6 +42,7 @@ exports.main = async (event, context) => {
       totalLoseScore: 0,
       maxSingleWin: 0,
       maxStreak: 0,
+      banned: false,
       createdAt: db.serverDate(),
       updatedAt: db.serverDate()
     }
