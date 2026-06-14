@@ -1,68 +1,60 @@
-import cloudbase from '@cloudbase/js-sdk'
+import axios from 'axios'
 
-const ENV_ID = import.meta.env.VITE_TCB_ENV_ID || ''
+// 两个云函数的 HTTP 触发器地址，在 .env 中配置
+const LOGIN_URL = import.meta.env.VITE_ADMIN_LOGIN_URL || ''
+const API_URL = import.meta.env.VITE_ADMIN_API_URL || ''
 
-const app = cloudbase.init({ env: ENV_ID })
-let authPromise = null
+const http = axios.create({ timeout: 15000 })
 
-function ensureAuth() {
-  if (!authPromise) {
-    const auth = app.auth({ persistence: 'local' })
-    // v3.x SDK 使用 signInAnonymously
-    authPromise = auth.signInAnonymously().catch(err => {
-      authPromise = null
-      throw err
-    })
+// 请求拦截：adminAPI 请求自动带上 token
+http.interceptors.request.use(config => {
+  if (config.url === API_URL) {
+    const token = localStorage.getItem('admin_token')
+    if (token) {
+      config.data = { ...config.data, token }
+    }
   }
-  return authPromise
-}
+  return config
+})
 
-async function callFunction(name, data = {}) {
-  await ensureAuth()
-  const res = await app.callFunction({ name, data })
-  const result = res.result
-  if (result.code !== undefined && result.code !== 0) {
-    if (result.code === 401) {
+// 响应拦截：统一处理返回格式
+http.interceptors.response.use(
+  res => {
+    const { code, data, message } = res.data
+    if (code === 0) return data
+    if (code === 401) {
       localStorage.removeItem('admin_token')
       window.location.hash = '#/login'
     }
-    const err = new Error(result.message || '请求失败')
-    err.code = result.code
-    throw err
-  }
-  return result.data !== undefined ? result.data : result
-}
+    return Promise.reject(new Error(message || '请求失败'))
+  },
+  err => Promise.reject(err)
+)
 
 export const adminLogin = (username, password) => {
-  return callFunction('adminLogin', { username, password })
+  return http.post(LOGIN_URL, { username, password })
 }
 
 export const getDashboard = () => {
-  const token = localStorage.getItem('admin_token')
-  return callFunction('adminAPI', { action: 'getDashboard', token })
+  return http.post(API_URL, { action: 'getDashboard' })
 }
 
 export const getUsers = (params) => {
-  const token = localStorage.getItem('admin_token')
-  return callFunction('adminAPI', { action: 'getUsers', token, ...params })
+  return http.post(API_URL, { action: 'getUsers', ...params })
 }
 
 export const banUser = (openid, banned, reason) => {
-  const token = localStorage.getItem('admin_token')
-  return callFunction('adminAPI', { action: 'banUser', token, openid, banned, reason })
+  return http.post(API_URL, { action: 'banUser', openid, banned, reason })
 }
 
 export const getRooms = (params) => {
-  const token = localStorage.getItem('admin_token')
-  return callFunction('adminAPI', { action: 'getRooms', token, ...params })
+  return http.post(API_URL, { action: 'getRooms', ...params })
 }
 
 export const getRoomDetail = (roomId) => {
-  const token = localStorage.getItem('admin_token')
-  return callFunction('adminAPI', { action: 'getRoomDetail', token, roomId })
+  return http.post(API_URL, { action: 'getRoomDetail', roomId })
 }
 
 export const dissolveRoom = (roomId) => {
-  const token = localStorage.getItem('admin_token')
-  return callFunction('adminAPI', { action: 'dissolveRoom', token, roomId })
+  return http.post(API_URL, { action: 'dissolveRoom', roomId })
 }

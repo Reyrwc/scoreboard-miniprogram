@@ -11,9 +11,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'scoreboard-admin-secret-dev'
 const ok = (data) => ({ code: 0, data, message: 'ok' })
 const fail = (code, message) => ({ code, message })
 
-// 鉴权 — 支持从 event.token（SDK 调用）或 Authorization header（HTTP 调用）读取
+// 鉴权 — 支持从 Authorization header（HTTP 触发器）或 event.token（SDK 调用）读取
 function verifyToken(event) {
-  const token = event.token || (event.authorization || event.Authorization || '').replace('Bearer ', '')
+  const token = (event.authorization || event.Authorization || '').replace('Bearer ', '') || event.token
   if (!token) return null
   try {
     return jwt.verify(token, JWT_SECRET)
