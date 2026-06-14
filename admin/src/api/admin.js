@@ -8,7 +8,8 @@ let authPromise = null
 function ensureAuth() {
   if (!authPromise) {
     const auth = app.auth({ persistence: 'local' })
-    authPromise = auth.anonymousAuthProvider().signIn().catch(err => {
+    // v3.x SDK 使用 signInAnonymously
+    authPromise = auth.signInAnonymously().catch(err => {
       authPromise = null
       throw err
     })
