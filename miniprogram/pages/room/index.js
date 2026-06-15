@@ -178,11 +178,11 @@ Page({
   },
 
   async onScoreConfirm(e) {
-    const { score, note } = e.detail
+    const { score } = e.detail
     const { targetPlayer, roomId, room } = this.data
     try {
       wx.showLoading({ title: '提交中...' })
-      await api.addScore({ roomId, toOpenid: targetPlayer.openid, amount: score, note })
+      await api.addScore({ roomId, toOpenid: targetPlayer.openid, amount: score })
       const now = new Date()
       const fromPlayer = room.players.find(p => p.openid === app.globalData.openid)
       const h = now.getHours().toString().padStart(2, '0')
@@ -199,7 +199,6 @@ Page({
         toNickname: targetPlayer.nickname || '玩家',
         toAvatarUrl: targetPlayer.avatarUrl || '',
         amount: parseFloat(score),
-        note: note || '',
         createdAt: now,
         _time: h + ':' + m + ':' + s
       }

@@ -4,18 +4,14 @@ Component({
     targetPlayer: Object
   },
   data: {
-    scoreValue: '',
-    noteValue: ''
+    scoreValue: ''
   },
   methods: {
     onScoreInput(e) {
       this.setData({ scoreValue: e.detail.value })
     },
-    onNoteInput(e) {
-      this.setData({ noteValue: e.detail.value })
-    },
     onClose() {
-      this.setData({ scoreValue: '', noteValue: '' })
+      this.setData({ scoreValue: '' })
       this.triggerEvent('close')
     },
     onConfirm() {
@@ -24,11 +20,8 @@ Component({
         wx.showToast({ title: '请输入正数', icon: 'none' })
         return
       }
-      this.triggerEvent('confirm', {
-        score,
-        note: this.data.noteValue
-      })
-      this.setData({ scoreValue: '', noteValue: '' })
+      this.triggerEvent('confirm', { score })
+      this.setData({ scoreValue: '' })
     }
   }
 })

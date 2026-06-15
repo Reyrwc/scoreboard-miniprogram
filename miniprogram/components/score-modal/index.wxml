@@ -5,7 +5,6 @@
     <view class="input-row">
       <input class="score-input" type="digit" placeholder="输入分数" value="{{scoreValue}}" bindinput="onScoreInput" />
     </view>
-    <input class="note-input" placeholder="备注（选填）" value="{{noteValue}}" bindinput="onNoteInput" maxlength="10"/>
     <button class="btn-submit" bindtap="onConfirm">确认</button>
   </view>
 </view>
