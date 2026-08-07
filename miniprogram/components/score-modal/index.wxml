@@ -1,9 +1,9 @@
-<view class="modal-overlay {{visible ? 'active' : ''}}" bindtap="onClose">
+<view class="modal-overlay {{visible ? 'active' : ''}}" bindtap="onClose" style="padding-bottom: {{keyboardHeight ? keyboardHeight + 30 + 'px' : '20vh'}};">
   <view class="modal-sheet" catchtap>
     <view class="modal-close" bindtap="onClose">×</view>
     <view class="modal-title">给 {{targetPlayer.nickname}} 记分</view>
     <view class="input-row">
-      <input class="score-input" type="digit" placeholder="输入分数" value="{{scoreValue}}" bindinput="onScoreInput" />
+      <input class="score-input" type="digit" placeholder="输入分数" value="{{scoreValue}}" focus="{{inputFocus}}" adjust-position="{{false}}" bindkeyboardheightchange="onKeyboardHeightChange" bindinput="onScoreInput" />
     </view>
     <button class="btn-submit" bindtap="onConfirm">确认</button>
   </view>

@@ -53,7 +53,10 @@ Page({
   },
 
   onShow() {
-    // 回到页面时恢复实时同步
+    // 回到页面时立即拉取一次最新数据，并恢复实时同步
+    if (this.data.roomId) {
+      this.refreshRoom().catch(() => {})
+    }
     this.startPolling()
   },
 
