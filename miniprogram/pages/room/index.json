@@ -1,5 +1,7 @@
 {
   "navigationBarTitleText": "房间",
+  "enablePullDownRefresh": true,
+  "backgroundTextStyle": "dark",
   "usingComponents": {
     "player-card": "/components/player-card/index",
     "score-modal": "/components/score-modal/index",

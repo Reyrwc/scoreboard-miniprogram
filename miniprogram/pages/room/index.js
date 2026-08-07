@@ -3,6 +3,10 @@ const icons = require('../../utils/icons')
 const { ROOM_EXPIRE_MS } = require('../../utils/config')
 const app = getApp()
 
+// 轮询间隔（毫秒）：云函数可绕过安全规则读取全部玩家与记分，
+// 客户端 watch 受数据库安全规则限制不可靠，故用轮询保证实时同步
+const POLL_INTERVAL = 3000
+
 Page({
   data: {
     roomId: '',
@@ -19,6 +23,7 @@ Page({
     showNicknameEdit: false,
     editNickname: '',
     qrcodeUrl: '',
+    qrError: '',
     icons: {
       people: icons.people,
       logout: icons.logout,
@@ -31,10 +36,38 @@ Page({
       this.createRoom()
     } else if (options.roomId) {
       this.joinRoom(options.roomId)
+    } else if (options.scene) {
+      // 小程序码扫码进入：scene 形如 "roomId=xxxx"（URL 编码）
+      try {
+        const scene = decodeURIComponent(options.scene)
+        const params = {}
+        scene.split('&').forEach(pair => {
+          const [k, v] = pair.split('=')
+          if (k && v) params[k] = v
+        })
+        if (params.roomId) this.joinRoom(params.roomId)
+      } catch (err) {
+        console.error('解析 scene 失败:', err)
+      }
     }
   },
 
+  onShow() {
+    // 回到页面时恢复实时同步
+    this.startPolling()
+  },
+
+  onHide() {
+    // 页面隐藏时暂停轮询，节省云函数调用
+    this.stopPolling()
+  },
+
+  onPullDownRefresh() {
+    this.loadRoom().finally(() => wx.stopPullDownRefresh())
+  },
+
   onUnload() {
+    this.stopPolling()
     if (this.roomWatcher) this.roomWatcher.close()
     if (this._expireTimer) clearTimeout(this._expireTimer)
   },
@@ -71,42 +104,105 @@ Page({
   async loadRoom() {
     try {
       const res = await api.getRoomInfo({ roomId: this.data.roomId })
-      // 云函数有管理员权限，能读到所有分数；客户端查询受安全规则限制会返回空
-      const scores = res.scores || []
-      const rankings = res.rankings || []
-      // 给分数记录附带头像
-      const players = res.room.players || []
-      const avatarMap = {}
-      players.forEach(p => { avatarMap[p.openid] = p.avatarUrl || '' })
-      scores.forEach(s => {
-        s.fromAvatarUrl = avatarMap[s.fromOpenid] || ''
-        s.toAvatarUrl = avatarMap[s.toOpenid] || ''
-        // 直接计算时间，不依赖 observer
-        if (!s._time) {
-          const d = s.createdAt instanceof Date ? s.createdAt : new Date(s.createdAt)
-          if (!isNaN(d.getTime())) {
-            s._time = d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0') + ':' + d.getSeconds().toString().padStart(2, '0')
-          } else {
-            s._time = ''
-          }
-        }
-      })
-
-      this.setData({
-        room: res.room,
-        rankings,
-        scores,
-        isOwner: res.room.ownerId === app.globalData.openid,
-        isLoading: false,
-        isActive: res.room.status === 'active'
-      })
       wx.setNavigationBarTitle({ title: res.room.name })
+      this.applyRoomData(res)
+      if (res.room.status !== 'active') {
+        this.handleRoomEnded('房间已结束')
+        return
+      }
       this.watchRoom()
       this._startExpireTimer()
+      this.startPolling()
     } catch (err) {
       this.setData({ isLoading: false })
       wx.showToast({ title: err.message || '加载失败', icon: 'none' })
     }
+  },
+
+  // 应用云函数返回的房间/排名/记分数据
+  applyRoomData(res) {
+    const scores = res.scores || []
+    const rankings = res.rankings || []
+    // 给分数记录附带头像
+    const players = res.room.players || []
+    const avatarMap = {}
+    players.forEach(p => { avatarMap[p.openid] = p.avatarUrl || '' })
+    scores.forEach(s => {
+      s.fromAvatarUrl = avatarMap[s.fromOpenid] || ''
+      s.toAvatarUrl = avatarMap[s.toOpenid] || ''
+      // 直接计算时间，不依赖 observer
+      if (!s._time) {
+        const d = s.createdAt instanceof Date ? s.createdAt : new Date(s.createdAt)
+        if (!isNaN(d.getTime())) {
+          s._time = d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0') + ':' + d.getSeconds().toString().padStart(2, '0')
+        } else {
+          s._time = ''
+        }
+      }
+    })
+
+    this.setData({
+      room: res.room,
+      rankings,
+      scores,
+      isOwner: res.room.ownerId === app.globalData.openid,
+      isLoading: false,
+      isActive: res.room.status === 'active'
+    })
+  },
+
+  // 从云函数拉取最新数据并应用（云函数有管理员权限，能读到全部玩家与记分）
+  async refreshRoom() {
+    try {
+      const res = await api.getRoomInfo({ roomId: this.data.roomId })
+      if (this._ended || !res.room) return
+      if (res.room.status !== 'active') {
+        this.applyRoomData(res)
+        this.handleRoomEnded('房间已结束')
+        return
+      }
+      this.applyRoomData(res)
+      this._startExpireTimer()
+    } catch (err) {
+      console.error('刷新房间数据失败:', err)
+      throw err
+    }
+  },
+
+  startPolling() {
+    if (this._ended || !this.data.roomId) return
+    this.stopPolling()
+    this._pollTimer = setInterval(() => this.pollRoom(), POLL_INTERVAL)
+  },
+
+  stopPolling() {
+    if (this._pollTimer) {
+      clearInterval(this._pollTimer)
+      this._pollTimer = null
+    }
+  },
+
+  async pollRoom() {
+    if (this._polling || this._ended) return
+    this._polling = true
+    try {
+      await this.refreshRoom()
+    } catch (err) {
+      // 瞬时错误忽略，等待下一次轮询
+    } finally {
+      this._polling = false
+    }
+  },
+
+  handleRoomEnded(title) {
+    if (this._ended) return
+    this._ended = true
+    this.stopPolling()
+    if (this.roomWatcher) this.roomWatcher.close()
+    if (this._expireTimer) clearTimeout(this._expireTimer)
+    app.globalData._roomDissolved = true
+    wx.showToast({ title, icon: 'none' })
+    setTimeout(() => wx.navigateBack(), 1500)
   },
 
   onPlayerTap(e) {
@@ -179,35 +275,18 @@ Page({
 
   async onScoreConfirm(e) {
     const { score } = e.detail
-    const { targetPlayer, roomId, room } = this.data
+    const { targetPlayer, roomId } = this.data
     try {
       wx.showLoading({ title: '提交中...' })
       await api.addScore({ roomId, toOpenid: targetPlayer.openid, amount: score })
-      const now = new Date()
-      const fromPlayer = room.players.find(p => p.openid === app.globalData.openid)
-      const h = now.getHours().toString().padStart(2, '0')
-      const m = now.getMinutes().toString().padStart(2, '0')
-      const s = now.getSeconds().toString().padStart(2, '0')
-      const newScore = {
-        _id: 'local_' + now.getTime(),
-        roomId,
-        roundNum: room.currentRound,
-        fromOpenid: app.globalData.openid,
-        fromNickname: fromPlayer?.nickname || '玩家',
-        fromAvatarUrl: fromPlayer?.avatarUrl || '',
-        toOpenid: targetPlayer.openid,
-        toNickname: targetPlayer.nickname || '玩家',
-        toAvatarUrl: targetPlayer.avatarUrl || '',
-        amount: parseFloat(score),
-        createdAt: now,
-        _time: h + ':' + m + ':' + s
+      this.setData({ showScoreModal: false, targetPlayer: null })
+      try {
+        // 保存成功后立即同步最新分数与排名
+        await this.refreshRoom()
+      } catch (err) {
+        // 分数已保存，仅刷新失败不影响结果
+        console.error('记分后刷新失败:', err)
       }
-      const scores = [newScore, ...this.data.scores]
-      // 更新 room.lastScoreAt 使过期计时器从本次记分开始重新倒计时
-      const updatedRoom = { ...room, lastScoreAt: now }
-      this.setData({ showScoreModal: false, targetPlayer: null, scores, room: updatedRoom })
-      this.calcRankings()
-      this._startExpireTimer()
     } catch (err) {
       wx.showToast({ title: err.message || '记分失败', icon: 'none' })
     } finally {
@@ -242,17 +321,25 @@ Page({
 
   async _generateQRCode() {
     try {
+      this.setData({ qrError: '' })
       const res = await wx.cloud.callFunction({
         name: 'getRoomQRCode',
         data: { roomId: this.data.roomId }
       })
-      if (res.result && res.result.imageUrl) {
-        this.setData({ qrcodeUrl: res.result.imageUrl })
+      if (res.result && res.result.code === 0 && res.result.imageUrl) {
+        this.setData({ qrcodeUrl: res.result.imageUrl, qrError: '' })
+      } else {
+        // 展示具体错误信息，供用户重试
+        this.setData({ qrError: (res.result && res.result.message) || '生成失败' })
       }
     } catch (err) {
       console.error('生成二维码失败:', err)
-      wx.showToast({ title: '二维码加载失败，请重试', icon: 'none' })
+      this.setData({ qrError: err.errMsg || '网络异常，请重试' })
     }
+  },
+
+  onRetryQRCode() {
+    this._generateQRCode()
   },
 
   onMenuLeave() {
@@ -356,79 +443,37 @@ Page({
     const remain = ROOM_EXPIRE_MS - (Date.now() - lastScore)
 
     if (remain <= 0) {
-      // 已过期，触发解散检查
-      this.loadRoom()
+      this.handleRoomEnded('房间已过期')
       return
     }
 
     this._expireTimer = setTimeout(() => {
-      if (this.data.isActive) {
-        app.globalData._roomDissolved = true
-        wx.showToast({ title: '房间已过期', icon: 'none' })
-        this.loadRoom()
-        setTimeout(() => wx.navigateBack(), 1500)
-      }
+      this.handleRoomEnded('房间已过期')
     }, remain)
   },
 
   watchRoom() {
     if (this.roomWatcher) this.roomWatcher.close()
 
-    const db = wx.cloud.database()
-    const roomId = this.data.roomId
+    try {
+      const db = wx.cloud.database()
+      const roomId = this.data.roomId
 
-    this.roomWatcher = db.collection('rooms').doc(roomId).watch({
-      onChange: (snapshot) => {
-        const room = snapshot.docs[0]
-        if (!room) return
-        // 构建 openid→昵称/头像 映射，同步更新 scores
-        const nameMap = {}
-        const avatarMap = {}
-        room.players.forEach(p => {
-          nameMap[p.openid] = p.nickname
-          avatarMap[p.openid] = p.avatarUrl || ''
-        })
-        const scores = this.data.scores.map(s => ({
-          ...s,
-          fromNickname: nameMap[s.fromOpenid] || s.fromNickname,
-          fromAvatarUrl: avatarMap[s.fromOpenid] || s.fromAvatarUrl,
-          toNickname: nameMap[s.toOpenid] || s.toNickname,
-          toAvatarUrl: avatarMap[s.toOpenid] || s.toAvatarUrl
-        }))
-        this.setData({ room, scores, isActive: room.status === 'active' })
-        this.calcRankings()
-        if (room.status !== 'active') {
-          if (this._expireTimer) clearTimeout(this._expireTimer)
-          app.globalData._roomDissolved = true
-          wx.showToast({ title: '房间已解散', icon: 'none' })
-          setTimeout(() => wx.navigateBack(), 1500)
+      this.roomWatcher = db.collection('rooms').doc(roomId).watch({
+        onChange: (snapshot) => {
+          const room = snapshot.docs[0]
+          if (!room) return
+          // 房间数据有变化（新玩家加入/记分/下一局/解散），立即拉取最新完整数据
+          // 客户端受安全规则限制无法读取他人记分，统一以云函数返回为准
+          this.pollRoom()
+        },
+        onError: (err) => {
+          // 客户端可能因安全规则无法监听 rooms 集合，轮询兜底
+          console.warn('房间监听失败（轮询兜底）:', err)
         }
-      },
-      onError: (err) => {
-        console.error('房间监听失败:', err)
-      }
-    })
-
-    // 不监听 scores 集合——客户端受安全规则限制读不到其他用户创建的记录，
-    // watch 会返回空数组覆盖掉从云函数拿到的真实数据。
-    // 分数变更通过 onScoreConfirm 本地更新 + loadRoom 从云函数获取。
+      })
+    } catch (err) {
+      console.warn('房间监听初始化失败（轮询兜底）:', err)
+    }
   },
-
-  calcRankings() {
-    const { room, scores } = this.data
-    if (!room) return
-
-    const scoreMap = {}
-    scores.forEach(s => {
-      scoreMap[s.toOpenid] = (scoreMap[s.toOpenid] || 0) + s.amount
-      scoreMap[s.fromOpenid] = (scoreMap[s.fromOpenid] || 0) - s.amount
-    })
-
-    const rankings = room.players.map(p => ({
-      ...p,
-      score: scoreMap[p.openid] || 0
-    })).sort((a, b) => b.score - a.score)
-
-    this.setData({ rankings })
-  }
 })

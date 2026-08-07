@@ -61,6 +61,12 @@
       <view class="invite-room-name">{{room.name}}</view>
       <view class="invite-qrcode-wrap">
         <image class="invite-qrcode" wx:if="{{qrcodeUrl}}" src="{{qrcodeUrl}}" mode="aspectFit"/>
+        <view class="invite-qrcode-loading" wx:elif="{{qrError}}">
+          <view class="qr-error-box">
+            <text class="qr-error-text">二维码加载失败：{{qrError}}</text>
+            <view class="qr-retry-btn" catchtap="onRetryQRCode">重新加载</view>
+          </view>
+        </view>
         <view class="invite-qrcode-loading" wx:else>
           <text>加载中...</text>
         </view>

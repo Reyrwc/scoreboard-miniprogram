@@ -126,7 +126,15 @@ Page({
     }
     wx.scanCode({
       success: (res) => {
-        const roomId = res.result
+        let roomId = res.result
+        // 小程序码扫码结果为 scene（形如 roomId=xxx），普通二维码直接是房间ID
+        if (roomId && roomId.indexOf('roomId=') !== -1) {
+          roomId = decodeURIComponent(roomId).replace(/^.*roomId=/, '').split('&')[0]
+        }
+        if (!roomId) {
+          wx.showToast({ title: '未识别到房间', icon: 'none' })
+          return
+        }
         wx.navigateTo({ url: `/pages/room/index?roomId=${roomId}` })
       }
     })

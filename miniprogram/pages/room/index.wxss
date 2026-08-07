@@ -212,6 +212,23 @@
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
 }
+.qr-error-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20rpx;
+}
+.qr-error-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+.qr-retry-btn {
+  padding: 12rpx 40rpx;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+}
 .btn-share {
   width: 100%;
   background: var(--color-primary);
